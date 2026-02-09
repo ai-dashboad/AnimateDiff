@@ -20,7 +20,6 @@ from animatediff.pipelines.pipeline_animation import AnimationPipeline
 from animatediff.utils.util import save_videos_grid, load_weights, auto_download, MOTION_MODULES, BACKUP_DREAMBOOTH_MODELS
 from animatediff.utils.convert_from_ckpt import convert_ldm_unet_checkpoint, convert_ldm_clip_checkpoint, convert_ldm_vae_checkpoint
 from animatediff.utils.convert_lora_safetensor_to_diffusers import convert_lora
-import pdb
 
 
 sample_idx = 0
@@ -32,7 +31,7 @@ scheduler_dict = {
 
 css = """
 .toolbutton {
-    margin-buttom: 0em 0em 0em 0em;
+    margin-bottom: 0em 0em 0em 0em;
     max-width: 2.5em;
     min-width: 2.5em !important;
     height: 2.5em;
@@ -140,7 +139,7 @@ class AnimateController:
         self.pipeline = pipeline
         print("done.")
 
-        return gr.Dropdown.update()
+        return gr.Dropdown()
 
     def update_pipeline_alpha(
         self,
@@ -152,7 +151,7 @@ class AnimateController:
         sampler_dropdown="DDIM",
     ):
         if lora_model_dropdown == "none":
-            return gr.Slider.update()
+            return gr.Slider()
 
         self.update_pipeline(
             stable_diffusion_dropdown=stable_diffusion_dropdown,
@@ -163,7 +162,7 @@ class AnimateController:
             sampler_dropdown=sampler_dropdown,
         )
 
-        return gr.Slider.update()
+        return gr.Slider()
 
 
     @torch.no_grad()
@@ -215,7 +214,7 @@ class AnimateController:
             f.write(json_str)
             f.write("\n\n")
             
-        return gr.Video.update(value=save_sample_path)
+        return gr.Video(value=save_sample_path)
         
 
 controller = AnimateController()
@@ -278,9 +277,9 @@ def ui():
                     controller.refresh_stable_diffusion()
                     controller.refresh_personalized_model()
                     return [
-                        gr.Dropdown.update(choices=controller.stable_diffusion_list),
-                        gr.Dropdown.update(choices=controller.personalized_model_list),
-                        gr.Dropdown.update(choices=["none"] + controller.personalized_model_list)
+                        gr.Dropdown(choices=controller.stable_diffusion_list),
+                        gr.Dropdown(choices=controller.personalized_model_list),
+                        gr.Dropdown(choices=["none"] + controller.personalized_model_list)
                     ]
                 personalized_refresh_button.click(fn=update_personalized_model, inputs=[], outputs=[stable_diffusion_dropdown, base_model_dropdown, lora_model_dropdown])
 
@@ -293,7 +292,7 @@ def ui():
             prompt_textbox = gr.Textbox(label="Prompt", lines=2, value=default_prompt)
             negative_prompt_textbox = gr.Textbox(label="Negative prompt", lines=2, value=default_n_prompt)
 
-            with gr.Row().style(equal_height=False):
+            with gr.Row():
                 with gr.Column():
                     with gr.Row():
                         sampler_dropdown = gr.Dropdown(label="Sampling method", choices=list(scheduler_dict.keys()), value=list(scheduler_dict.keys())[0])
@@ -307,7 +306,7 @@ def ui():
                     with gr.Row():
                         seed_textbox = gr.Textbox(label="Seed (-1 for random seed)", value=default_seed)
                         seed_button = gr.Button(value="\U0001F3B2", elem_classes="toolbutton")
-                        seed_button.click(fn=lambda: gr.Textbox.update(value=random.randint(1, 1e8)), inputs=[], outputs=[seed_textbox])
+                        seed_button.click(fn=lambda: gr.Textbox(value=random.randint(1, int(1e8))), inputs=[], outputs=[seed_textbox])
             
                     generate_button = gr.Button(value="Generate", variant='primary')
                     

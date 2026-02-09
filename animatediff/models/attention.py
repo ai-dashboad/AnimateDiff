@@ -14,7 +14,6 @@ from diffusers.utils.import_utils import is_xformers_available
 from diffusers.models.attention import CrossAttention, FeedForward, AdaLayerNorm
 
 from einops import rearrange, repeat
-import pdb
 
 @dataclass
 class Transformer3DModelOutput(BaseOutput):

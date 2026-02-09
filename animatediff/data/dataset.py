@@ -64,13 +64,18 @@ class WebVid10M(Dataset):
         return self.length
 
     def __getitem__(self, idx):
-        while True:
+        max_retries = 10
+        for attempt in range(max_retries):
             try:
                 pixel_values, name = self.get_batch(idx)
                 break
-
             except Exception as e:
-                idx = random.randint(0, self.length-1)
+                if attempt == max_retries - 1:
+                    raise RuntimeError(
+                        f"Failed to load data after {max_retries} attempts. "
+                        f"Last index: {idx}, error: {e}"
+                    )
+                idx = random.randint(0, self.length - 1)
 
         pixel_values = self.pixel_transforms(pixel_values)
         sample = dict(pixel_values=pixel_values, text=name)
@@ -88,9 +93,6 @@ if __name__ == "__main__":
         sample_stride=4, sample_n_frames=16,
         is_image=True,
     )
-    import pdb
-    pdb.set_trace()
-    
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=4, num_workers=16,)
     for idx, batch in enumerate(dataloader):
         print(batch["pixel_values"].shape, len(batch["text"]))

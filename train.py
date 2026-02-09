@@ -44,12 +44,17 @@ from animatediff.utils.util import save_videos_grid, zero_rank_print
 def init_dist(launcher="slurm", backend='nccl', port=29500, **kwargs):
     """Initializes distributed environment."""
     if launcher == 'pytorch':
-        rank = int(os.environ['RANK'])
+        rank = int(os.environ.get('RANK', 0))
         num_gpus = torch.cuda.device_count()
         local_rank = rank % num_gpus
         torch.cuda.set_device(local_rank)
+        if not dist.is_initialized():
+            os.environ.setdefault('MASTER_ADDR', 'localhost')
+            os.environ.setdefault('MASTER_PORT', str(port))
+            os.environ.setdefault('WORLD_SIZE', str(num_gpus))
+            os.environ.setdefault('RANK', str(rank))
         dist.init_process_group(backend=backend, **kwargs)
-        
+
     elif launcher == 'slurm':
         proc_id = int(os.environ['SLURM_PROCID'])
         ntasks = int(os.environ['SLURM_NTASKS'])
@@ -177,7 +182,7 @@ def main(
     # Load pretrained unet weights
     if unet_checkpoint_path != "":
         zero_rank_print(f"from checkpoint: {unet_checkpoint_path}")
-        unet_checkpoint_path = torch.load(unet_checkpoint_path, map_location="cpu")
+        unet_checkpoint_path = torch.load(unet_checkpoint_path, map_location="cpu", weights_only=False)
         if "global_step" in unet_checkpoint_path: zero_rank_print(f"global_step: {unet_checkpoint_path['global_step']}")
         state_dict = unet_checkpoint_path["state_dict"] if "state_dict" in unet_checkpoint_path else unet_checkpoint_path
 
@@ -410,15 +415,32 @@ def main(
             # Save checkpoint
             if is_main_process and (global_step % checkpointing_steps == 0 or step == len(train_dataloader) - 1):
                 save_path = os.path.join(output_dir, f"checkpoints")
+
+                # Save full state dict
+                full_state_dict = unet.state_dict()
                 state_dict = {
                     "epoch": epoch,
                     "global_step": global_step,
-                    "state_dict": unet.state_dict(),
+                    "state_dict": full_state_dict,
                 }
+
+                # Also save motion module weights separately for direct inference use
+                if not image_finetune:
+                    motion_module_state_dict = {
+                        k: v for k, v in full_state_dict.items()
+                        if "motion_modules." in k
+                    }
+
                 if step == len(train_dataloader) - 1:
                     torch.save(state_dict, os.path.join(save_path, f"checkpoint-epoch-{epoch+1}.ckpt"))
+                    if not image_finetune:
+                        torch.save(motion_module_state_dict, os.path.join(save_path, f"motion-module-epoch-{epoch+1}.ckpt"))
                 else:
                     torch.save(state_dict, os.path.join(save_path, f"checkpoint.ckpt"))
+                    if not image_finetune:
+                        torch.save(motion_module_state_dict, os.path.join(save_path, f"motion-module.ckpt"))
+
+                del full_state_dict
                 logging.info(f"Saved state to {save_path} (global_step: {global_step})")
                 
             # Periodically validation

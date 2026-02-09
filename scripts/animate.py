@@ -22,7 +22,7 @@ from diffusers.utils.import_utils import is_xformers_available
 
 from einops import rearrange, repeat
 
-import csv, pdb, glob, math
+import csv, glob, math
 from pathlib import Path
 from PIL import Image
 import numpy as np
@@ -68,7 +68,7 @@ def main(args):
 
             auto_download(model_config.controlnet_path, is_dreambooth_lora=False)
             print(f"loading controlnet checkpoint from {model_config.controlnet_path} ...")
-            controlnet_state_dict = torch.load(model_config.controlnet_path, map_location="cpu")
+            controlnet_state_dict = torch.load(model_config.controlnet_path, map_location="cpu", weights_only=False)
             controlnet_state_dict = controlnet_state_dict["controlnet"] if "controlnet" in controlnet_state_dict else controlnet_state_dict
             controlnet_state_dict = {name: param for name, param in controlnet_state_dict.items() if "pos_encoder.pe" not in name}
             controlnet_state_dict.pop("animatediff_config", "")

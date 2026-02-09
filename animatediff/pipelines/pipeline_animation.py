@@ -29,7 +29,6 @@ from einops import rearrange
 
 from ..models.unet import UNet3DConditionModel
 from ..models.sparse_controlnet import SparseControlNetModel
-import pdb
 
 logger = logging.get_logger(__name__)  # pylint: disable=invalid-name
 

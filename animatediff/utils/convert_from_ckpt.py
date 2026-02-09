@@ -924,7 +924,7 @@ def stable_unclip_image_noising_components(
             if clip_stats_path is None:
                 raise ValueError("This stable unclip config requires a `clip_stats_path`")
 
-            clip_mean, clip_std = torch.load(clip_stats_path, map_location=device)
+            clip_mean, clip_std = torch.load(clip_stats_path, map_location=device, weights_only=False)
             clip_mean = clip_mean[None, :]
             clip_std = clip_std[None, :]
 
