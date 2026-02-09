@@ -1,6 +1,6 @@
 torch>=2.0.0
 torchvision>=0.15.0
-diffusers>=0.16.0,<0.18.0
+diffusers>=0.16.0
 transformers>=4.25.0
 xformers>=0.0.20; sys_platform != 'darwin'
 imageio>=2.27.0
