@@ -1,0 +1,42 @@
+# Basic V2 pipeline example (uses diffusers AnimateDiffPipeline)
+# Usage: python scripts/animate.py --pipeline v2 --config configs/prompts/4_v2/4_1_v2_basic.yaml
+
+- W: 512
+  H: 512
+  seed: [42, 123]
+  steps: 25
+  guidance_scale: 7.5
+
+  prompt:
+    - "a cat playing with a ball of yarn, photorealistic, 4k"
+  n_prompt:
+    - "bad quality, worst quality, low resolution"
+
+
+# FreeInit example (better temporal consistency)
+# Usage: python scripts/animate.py --pipeline v2 --freeinit-iters 3 --config ...
+- W: 512
+  H: 512
+  seed: [42]
+  steps: 25
+  guidance_scale: 7.5
+
+  prompt:
+    - "sunset over the ocean with waves crashing, golden hour, cinematic"
+  n_prompt:
+    - "bad quality, worst quality, low resolution"
+
+
+# Long video example (64 frames with FreeNoise)
+# Usage: python scripts/animate.py --pipeline v2 --L 64 --context-length 16 --config ...
+- W: 512
+  H: 512
+  L: 64
+  seed: [42]
+  steps: 25
+  guidance_scale: 7.5
+
+  prompt:
+    - "a butterfly emerging from a cocoon, nature documentary, 4k"
+  n_prompt:
+    - "bad quality, worst quality, low resolution"

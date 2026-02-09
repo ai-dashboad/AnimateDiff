@@ -232,9 +232,9 @@ def ui():
     with gr.Blocks(css=css) as demo:
         gr.Markdown(
             """
-            # AnimateDiff: Animate Your Personalized Text-to-Image Diffusion Models without Specific Tuning
-            Yuwei Guo, Ceyuan Yang✝, Anyi Rao, Zhengyang Liang, Yaohui Wang, Yu Qiao, Maneesh Agrawala, Dahua Lin, Bo Dai (✝Corresponding Author)<br>
-            [Paper](https://arxiv.org/abs/2307.04725) | [Webpage](https://animatediff.github.io/) | [Github](https://github.com/guoyww/animatediff/)
+            # AnimateDiff V2: Text-to-Video Generation
+            Supports SD1.5, SDXL, Lightning (fast), FreeInit, FreeNoise (long videos), IP-Adapter, Prompt Travel<br>
+            [Paper](https://arxiv.org/abs/2307.04725) | [Webpage](https://animatediff.github.io/) | [Github](https://github.com/ai-dashboad/AnimateDiff)
             """
         )
         with gr.Column(variant="panel"):
@@ -308,7 +308,7 @@ def ui():
                         
                     width_slider = gr.Slider(label="Width", value=512, minimum=256, maximum=1024, step=64)
                     height_slider = gr.Slider(label="Height", value=512, minimum=256, maximum=1024, step=64)
-                    length_slider = gr.Slider(label="Animation length (default: 16)", value=16, minimum=8, maximum=24, step=1)
+                    length_slider = gr.Slider(label="Animation length (16=standard, 32-64=long with FreeNoise)", value=16, minimum=8, maximum=64, step=1)
                     cfg_scale_slider = gr.Slider(label="CFG Scale", value=8.0, minimum=0, maximum=20)
                     
                     with gr.Row():

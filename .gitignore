@@ -16,6 +16,7 @@ build/
 
 scripts/*
 !scripts/animate.py
+!scripts/__init__.py
 
 *.ipynb
 *.safetensors

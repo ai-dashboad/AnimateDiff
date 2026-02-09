@@ -1,0 +1,17 @@
+services:
+  animatediff:
+    build: .
+    ports:
+      - "7860:7860"
+    volumes:
+      - ./models:/app/models
+      - ./samples:/app/samples
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    environment:
+      - GRADIO_SERVER_NAME=0.0.0.0

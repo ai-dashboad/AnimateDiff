@@ -1,0 +1,65 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "animatediff"
+version = "2.0.0"
+description = "AnimateDiff: Animate Your Personalized Text-to-Image Diffusion Models without Specific Tuning"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+requires-python = ">=3.9"
+authors = [
+    {name = "AnimateDiff Contributors"},
+]
+keywords = ["diffusion", "video generation", "animation", "stable diffusion"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "torch>=2.0.0",
+    "torchvision>=0.15.0",
+    "diffusers>=0.28.0",
+    "transformers>=4.25.0",
+    "imageio>=2.27.0",
+    "imageio-ffmpeg>=0.4.9",
+    "omegaconf>=2.3.0",
+    "safetensors",
+    "einops",
+    "huggingface_hub>=0.14.0",
+    "packaging",
+    "accelerate>=0.20.0",
+    "peft>=0.6.0",
+]
+
+[project.optional-dependencies]
+train = ["wandb", "decord>=0.6.0"]
+ui = ["gradio>=3.41.0"]
+xformers = ["xformers>=0.0.20"]
+dev = ["pytest", "ruff"]
+all = ["animatediff[train,ui,xformers,dev]"]
+
+[project.scripts]
+animatediff = "scripts.animate:main_cli"
+
+[project.urls]
+Homepage = "https://github.com/ai-dashboad/AnimateDiff"
+Documentation = "https://github.com/ai-dashboad/AnimateDiff#readme"
+Repository = "https://github.com/ai-dashboad/AnimateDiff"
+Issues = "https://github.com/ai-dashboad/AnimateDiff/issues"
+
+[tool.setuptools.packages.find]
+include = ["animatediff*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --tb=short"

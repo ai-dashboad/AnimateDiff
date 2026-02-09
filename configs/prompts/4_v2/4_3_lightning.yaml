@@ -1,0 +1,15 @@
+# AnimateDiff-Lightning example — ultra-fast 4-step inference
+# Usage: python scripts/animate.py --pipeline lightning --config configs/prompts/4_v2/4_3_lightning.yaml
+
+- W: 512
+  H: 512
+  seed: [42, 123, 456]
+  steps: 4
+  guidance_scale: 1.0
+
+  prompt:
+    - "a girl smiling and waving, anime style, vibrant colors"
+    - "a panda eating bamboo in a forest, photorealistic"
+    - "astronaut floating in space with Earth in background, cinematic"
+  n_prompt:
+    - ""

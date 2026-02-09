@@ -18,6 +18,7 @@ from animatediff.models.sparse_controlnet import SparseControlNetModel
 from animatediff.pipelines.pipeline_animation import AnimationPipeline
 from animatediff.utils.util import save_videos_grid
 from animatediff.utils.util import load_weights, auto_download
+from animatediff.utils.prompt_travel import parse_prompt_travel
 from diffusers.utils.import_utils import is_xformers_available
 
 from einops import rearrange, repeat
@@ -28,11 +29,197 @@ from PIL import Image
 import numpy as np
 
 
+# ============================================================================
+# V2 Pipeline Runners (diffusers-based)
+# ============================================================================
+
 @torch.no_grad()
-def main(args):
-    *_, func_args = inspect.getargvalues(inspect.currentframe())
-    func_args = dict(func_args)
-    
+def run_v2(args):
+    """Run using the V2 pipeline (diffusers AnimateDiffPipeline wrapper)."""
+    from animatediff.pipelines.pipeline_v2 import AnimateDiffV2Pipeline
+
+    time_str = datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+    savedir = f"samples/v2-{time_str}"
+    os.makedirs(savedir, exist_ok=True)
+
+    config = OmegaConf.load(args.config)
+
+    pipe = AnimateDiffV2Pipeline.from_pretrained(
+        model_path=args.pretrained_model_path,
+        motion_adapter_path=args.motion_adapter or "guoyww/animatediff-motion-adapter-v1-5-3",
+        torch_dtype=torch.float16 if args.half_precision else torch.float32,
+        device=args.device,
+        scheduler=args.scheduler,
+    )
+
+    # Optional: FreeInit for temporal consistency
+    if args.freeinit_iters > 0:
+        pipe.enable_free_init(
+            num_iters=args.freeinit_iters,
+            method=args.freeinit_method,
+            use_fast_sampling=True,
+        )
+
+    # Optional: FreeNoise for long videos (>16 frames)
+    if args.context_length > 0:
+        pipe.enable_free_noise(
+            context_length=args.context_length,
+            context_stride=args.context_overlap,
+        )
+
+    # Optional: IP-Adapter
+    ip_image = None
+    if args.ip_adapter_image:
+        pipe.load_ip_adapter(scale=args.ip_adapter_scale)
+        ip_image = Image.open(args.ip_adapter_image).convert("RGB")
+
+    # Optional: LoRA
+    if args.lora_path:
+        pipe.load_lora(args.lora_path, scale=args.lora_scale)
+
+    sample_idx = 0
+    for model_idx, model_config in enumerate(config):
+        W = model_config.get("W", args.W)
+        H = model_config.get("H", args.H)
+        L = model_config.get("L", args.L)
+
+        prompt = parse_prompt_travel(model_config)
+        n_prompt = model_config.get("n_prompt", [""])[0] if isinstance(model_config.get("n_prompt", [""]), list) else model_config.get("n_prompt", "")
+
+        seeds = model_config.get("seed", [-1])
+        if isinstance(seeds, int):
+            seeds = [seeds]
+
+        for seed in seeds:
+            print(f"[V2] Generating: {prompt} (seed={seed})")
+            output = pipe.generate(
+                prompt=prompt,
+                negative_prompt=n_prompt,
+                num_frames=L,
+                height=H,
+                width=W,
+                num_inference_steps=model_config.get("steps", 25),
+                guidance_scale=model_config.get("guidance_scale", 7.5),
+                seed=seed,
+                ip_adapter_image=ip_image,
+            )
+
+            path = f"{savedir}/sample/{sample_idx}.{args.format}"
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            pipe.save(output, path)
+            print(f"Saved to {path}")
+            sample_idx += 1
+
+    if args.freeinit_iters > 0:
+        pipe.disable_free_init()
+
+
+@torch.no_grad()
+def run_sdxl(args):
+    """Run using the SDXL pipeline."""
+    from animatediff.pipelines.pipeline_sdxl import AnimateDiffSDXL
+
+    time_str = datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+    savedir = f"samples/sdxl-{time_str}"
+    os.makedirs(savedir, exist_ok=True)
+
+    config = OmegaConf.load(args.config)
+
+    pipe = AnimateDiffSDXL.from_pretrained(
+        model_path=args.pretrained_model_path or "stabilityai/stable-diffusion-xl-base-1.0",
+        motion_adapter_path=args.motion_adapter or "guoyww/animatediff-motion-adapter-sdxl-beta",
+        torch_dtype=torch.float16,
+        device=args.device,
+        scheduler=args.scheduler,
+    )
+
+    sample_idx = 0
+    for model_idx, model_config in enumerate(config):
+        W = model_config.get("W", args.W)
+        H = model_config.get("H", args.H)
+        L = model_config.get("L", args.L)
+
+        prompt = parse_prompt_travel(model_config)
+        n_prompt = model_config.get("n_prompt", [""])[0] if isinstance(model_config.get("n_prompt", [""]), list) else model_config.get("n_prompt", "")
+
+        seeds = model_config.get("seed", [-1])
+        if isinstance(seeds, int):
+            seeds = [seeds]
+
+        for seed in seeds:
+            print(f"[SDXL] Generating: {prompt} (seed={seed})")
+            output = pipe.generate(
+                prompt=prompt,
+                negative_prompt=n_prompt,
+                num_frames=L,
+                height=H,
+                width=W,
+                num_inference_steps=model_config.get("steps", 20),
+                guidance_scale=model_config.get("guidance_scale", 8.0),
+                seed=seed,
+            )
+
+            path = f"{savedir}/sample/{sample_idx}.{args.format}"
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            pipe.save(output, path)
+            print(f"Saved to {path}")
+            sample_idx += 1
+
+
+@torch.no_grad()
+def run_lightning(args):
+    """Run using AnimateDiff-Lightning for ultra-fast inference."""
+    from animatediff.pipelines.pipeline_lightning import AnimateDiffLightning
+
+    time_str = datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+    savedir = f"samples/lightning-{time_str}"
+    os.makedirs(savedir, exist_ok=True)
+
+    config = OmegaConf.load(args.config)
+
+    pipe = AnimateDiffLightning.from_pretrained(
+        model_path=args.pretrained_model_path or "emilianJR/epiCRealism",
+        num_steps=args.lightning_steps,
+        torch_dtype=torch.float16,
+        device=args.device,
+    )
+
+    sample_idx = 0
+    for model_idx, model_config in enumerate(config):
+        W = model_config.get("W", args.W)
+        H = model_config.get("H", args.H)
+        L = model_config.get("L", args.L)
+
+        prompt = parse_prompt_travel(model_config)
+
+        seeds = model_config.get("seed", [-1])
+        if isinstance(seeds, int):
+            seeds = [seeds]
+
+        for seed in seeds:
+            print(f"[Lightning] Generating ({args.lightning_steps}-step): {prompt} (seed={seed})")
+            output = pipe.generate(
+                prompt=prompt,
+                num_frames=L,
+                height=H,
+                width=W,
+                seed=seed,
+            )
+
+            path = f"{savedir}/sample/{sample_idx}.{args.format}"
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            pipe.save(output, path)
+            print(f"Saved to {path}")
+            sample_idx += 1
+
+
+# ============================================================================
+# Legacy Pipeline Runner (original AnimateDiff implementation)
+# ============================================================================
+
+@torch.no_grad()
+def run_legacy(args):
+    """Run using the original AnimateDiff pipeline (supports SparseCtrl)."""
     time_str = datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
     savedir = f"samples/{Path(args.config).stem}-{time_str}"
     extension = args.format
@@ -41,7 +228,6 @@ def main(args):
     config  = OmegaConf.load(args.config)
     samples = []
 
-    # create validation pipeline
     tokenizer    = CLIPTokenizer.from_pretrained(args.pretrained_model_path, subfolder="tokenizer")
     text_encoder = CLIPTextModel.from_pretrained(args.pretrained_model_path, subfolder="text_encoder").to(args.device)
     vae          = AutoencoderKL.from_pretrained(args.pretrained_model_path, subfolder="vae").to(args.device)
@@ -62,7 +248,7 @@ def main(args):
                 raise ValueError("controlnet_images must be specified when controlnet_path is set")
             if not model_config.get("controlnet_config", ""):
                 raise ValueError("controlnet_config must be specified when controlnet_path is set")
-            
+
             unet.config.num_attention_heads = 8
             unet.config.projection_class_embeddings_input_dim = None
 
@@ -88,7 +274,7 @@ def main(args):
 
             image_transforms = transforms.Compose([
                 transforms.RandomResizedCrop(
-                    (model_config.H, model_config.W), (1.0, 1.0), 
+                    (model_config.H, model_config.W), (1.0, 1.0),
                     ratio=(model_config.W/model_config.H, model_config.W/model_config.H)
                 ),
                 transforms.ToTensor(),
@@ -101,7 +287,7 @@ def main(args):
                     image /= image.max()
                     return image
             else: image_norm = lambda x: x
-                
+
             controlnet_images = [image_norm(image_transforms(Image.open(path).convert("RGB"))) for path in image_paths]
 
             os.makedirs(os.path.join(savedir, "control_images"), exist_ok=True)
@@ -141,19 +327,15 @@ def main(args):
 
         pipeline = load_weights(
             pipeline,
-            # motion module
             motion_module_path         = model_config.get("motion_module", ""),
             motion_module_lora_configs = model_config.get("motion_module_lora_configs", []),
-            # domain adapter
             adapter_lora_path          = model_config.get("adapter_lora_path", ""),
             adapter_lora_scale         = model_config.get("adapter_lora_scale", 1.0),
-            # image layers
             dreambooth_model_path      = model_config.get("dreambooth_path", ""),
             lora_model_path            = model_config.get("lora_model_path", ""),
             lora_alpha                 = model_config.get("lora_alpha", 0.8),
         ).to(args.device)
 
-        # memory optimizations
         pipeline.enable_vae_slicing()
         if args.half_precision and args.device != "cpu":
             pipeline.unet.half()
@@ -163,19 +345,17 @@ def main(args):
 
         prompts      = model_config.prompt
         n_prompts    = list(model_config.n_prompt) * len(prompts) if len(model_config.n_prompt) == 1 else model_config.n_prompt
-        
+
         random_seeds = model_config.get("seed", [-1])
         random_seeds = [random_seeds] if isinstance(random_seeds, int) else list(random_seeds)
         random_seeds = random_seeds * len(prompts) if len(random_seeds) == 1 else random_seeds
-        
+
         config[model_idx].random_seed = []
         for prompt_idx, (prompt, n_prompt, random_seed) in enumerate(zip(prompts, n_prompts, random_seeds)):
-            
-            # manually set random seed for reproduction
             if random_seed != -1: torch.manual_seed(random_seed)
             else: torch.seed()
             config[model_idx].random_seed.append(torch.initial_seed())
-            
+
             print(f"current seed: {torch.initial_seed()}")
             print(f"sampling {prompt} ...")
             sample = pipeline(
@@ -186,7 +366,6 @@ def main(args):
                 width               = model_config.W,
                 height              = model_config.H,
                 video_length        = model_config.L,
-
                 controlnet_images = controlnet_images,
                 controlnet_image_index = model_config.get("controlnet_image_indexs", [0]),
             ).videos
@@ -195,32 +374,76 @@ def main(args):
             prompt = "-".join((prompt.replace("/", "").split(" ")[:10]))
             save_videos_grid(sample, f"{savedir}/sample/{sample_idx}-{prompt}.{extension}")
             print(f"save to {savedir}/sample/{prompt}.{extension}")
-            
+
             sample_idx += 1
 
     samples = torch.concat(samples)
     save_videos_grid(samples, f"{savedir}/sample.{extension}", n_rows=4)
-
     OmegaConf.save(config, f"{savedir}/config.yaml")
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
+# ============================================================================
+# CLI Entry Point
+# ============================================================================
+
+def main_cli():
+    """Entry point for `animatediff` CLI command via pip install."""
+    parser = argparse.ArgumentParser(description="AnimateDiff — Text-to-Video Generation")
+
+    # Pipeline selection
+    parser.add_argument("--pipeline", type=str, default="legacy",
+                        choices=["legacy", "v2", "sdxl", "lightning"],
+                        help="Pipeline to use: legacy (original), v2 (diffusers), sdxl, lightning")
+
+    # Common arguments
     parser.add_argument("--pretrained-model-path", type=str, default="runwayml/stable-diffusion-v1-5")
-    parser.add_argument("--inference-config",      type=str, default="configs/inference/inference-v1.yaml")    
+    parser.add_argument("--inference-config",      type=str, default="configs/inference/inference-v1.yaml")
     parser.add_argument("--config",                type=str, required=True)
-    
-    parser.add_argument("--L", type=int, default=16 )
+    parser.add_argument("--motion-adapter",        type=str, default=None, help="Motion adapter path/repo for V2/SDXL pipelines")
+
+    parser.add_argument("--L", type=int, default=16)
     parser.add_argument("--W", type=int, default=512)
     parser.add_argument("--H", type=int, default=512)
 
-    parser.add_argument("--without-xformers", action="store_true")
+    # Output
     parser.add_argument("--format", type=str, default="gif", choices=["gif", "mp4"])
-    parser.add_argument("--scheduler", type=str, default="ddim", choices=["ddim", "euler", "euler-a", "dpm++", "dpm++-karras", "pndm"])
+
+    # Scheduler
+    parser.add_argument("--scheduler", type=str, default="ddim",
+                        choices=["ddim", "euler", "euler-a", "dpm++", "dpm++-karras", "pndm"])
+
+    # Performance
     parser.add_argument("--half-precision", action="store_true", help="Use float16 for lower VRAM usage")
-    parser.add_argument("--device", type=str, default=None, help="Device to use (cuda, mps, cpu). Auto-detected if not specified.")
+    parser.add_argument("--without-xformers", action="store_true")
+    parser.add_argument("--device", type=str, default=None,
+                        help="Device to use (cuda, mps, cpu). Auto-detected if not specified.")
+
+    # V2 features
+    parser.add_argument("--freeinit-iters", type=int, default=0,
+                        help="FreeInit iterations for temporal consistency (0=disabled, 2-3 recommended)")
+    parser.add_argument("--freeinit-method", type=str, default="butterworth",
+                        choices=["butterworth", "ideal", "gaussian"])
+    parser.add_argument("--context-length", type=int, default=0,
+                        help="FreeNoise context length for long videos (0=disabled, 16 recommended)")
+    parser.add_argument("--context-overlap", type=int, default=4,
+                        help="FreeNoise context stride/overlap")
+
+    # IP-Adapter
+    parser.add_argument("--ip-adapter-image", type=str, default=None,
+                        help="Path to reference image for IP-Adapter style transfer")
+    parser.add_argument("--ip-adapter-scale", type=float, default=0.6)
+
+    # LoRA
+    parser.add_argument("--lora-path", type=str, default=None, help="LoRA weights path for V2 pipeline")
+    parser.add_argument("--lora-scale", type=float, default=1.0)
+
+    # Lightning
+    parser.add_argument("--lightning-steps", type=int, default=4,
+                        choices=[1, 2, 4, 8], help="Number of steps for Lightning pipeline")
 
     args = parser.parse_args()
+
+    # Auto-detect device
     if args.device is None:
         if torch.cuda.is_available():
             args.device = "cuda"
@@ -229,4 +452,17 @@ if __name__ == "__main__":
         else:
             args.device = "cpu"
     print(f"Using device: {args.device}")
-    main(args)
+    print(f"Pipeline: {args.pipeline}")
+
+    # Route to the appropriate pipeline
+    pipeline_runners = {
+        "legacy": run_legacy,
+        "v2": run_v2,
+        "sdxl": run_sdxl,
+        "lightning": run_lightning,
+    }
+    pipeline_runners[args.pipeline](args)
+
+
+if __name__ == "__main__":
+    main_cli()

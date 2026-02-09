@@ -1,0 +1,17 @@
+# Prompt Travel example — smoothly transition between prompts across frames
+# Usage: python scripts/animate.py --pipeline v2 --L 64 --context-length 16 --config configs/prompts/4_v2/4_2_prompt_travel.yaml
+
+- W: 512
+  H: 512
+  L: 64
+  seed: [42]
+  steps: 25
+  guidance_scale: 7.5
+
+  prompt_travel:
+    0: "a serene lake surrounded by mountains, sunrise, golden light"
+    20: "the same lake with storm clouds gathering, dramatic lighting"
+    40: "lightning strikes over the lake, rain, dramatic atmosphere"
+
+  n_prompt:
+    - "bad quality, worst quality, low resolution, blurry"

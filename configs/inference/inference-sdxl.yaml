@@ -1,0 +1,11 @@
+motion_adapter: "guoyww/animatediff-motion-adapter-sdxl-beta"
+base_model: "stabilityai/stable-diffusion-xl-base-1.0"
+
+scheduler: "ddim"
+scheduler_kwargs:
+  beta_start: 0.00085
+  beta_end: 0.012
+  beta_schedule: "linear"
+  clip_sample: false
+  steps_offset: 1
+  timestep_spacing: "linspace"

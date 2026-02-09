@@ -1,0 +1,25 @@
+# SDXL AnimateDiff example — higher quality with Stable Diffusion XL
+# Usage: python scripts/animate.py --pipeline sdxl --config configs/prompts/4_v2/4_4_sdxl.yaml
+
+- W: 1024
+  H: 1024
+  seed: [42]
+  steps: 20
+  guidance_scale: 8.0
+
+  prompt:
+    - "a majestic eagle soaring over snow-capped mountains, golden hour, cinematic, 4k, photorealistic"
+  n_prompt:
+    - "low quality, worst quality, blurry, deformed"
+
+
+- W: 1024
+  H: 1024
+  seed: [123]
+  steps: 20
+  guidance_scale: 8.0
+
+  prompt:
+    - "cherry blossom petals falling in a traditional Japanese garden, spring, serene, 4k"
+  n_prompt:
+    - "low quality, worst quality, blurry, deformed"
