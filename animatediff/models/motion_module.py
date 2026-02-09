@@ -145,21 +145,21 @@ class TemporalTransformer3DModel(nn.Module):
         video_length = hidden_states.shape[2]
         hidden_states = rearrange(hidden_states, "b c f h w -> (b f) c h w")
 
-        batch, channel, height, weight = hidden_states.shape
+        batch, channel, height, width = hidden_states.shape
         residual = hidden_states
 
         hidden_states = self.norm(hidden_states)
         inner_dim = hidden_states.shape[1]
-        hidden_states = hidden_states.permute(0, 2, 3, 1).reshape(batch, height * weight, inner_dim)
+        hidden_states = hidden_states.permute(0, 2, 3, 1).reshape(batch, height * width, inner_dim)
         hidden_states = self.proj_in(hidden_states)
 
         # Transformer Blocks
         for block in self.transformer_blocks:
             hidden_states = block(hidden_states, encoder_hidden_states=encoder_hidden_states, video_length=video_length)
-        
+
         # output
         hidden_states = self.proj_out(hidden_states)
-        hidden_states = hidden_states.reshape(batch, height, weight, inner_dim).permute(0, 3, 1, 2).contiguous()
+        hidden_states = hidden_states.reshape(batch, height, width, inner_dim).permute(0, 3, 1, 2).contiguous()
 
         output = hidden_states + residual
         output = rearrange(output, "(b f) c h w -> b c f h w", f=video_length)

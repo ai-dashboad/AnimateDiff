@@ -8,7 +8,7 @@ import torch
 import torchvision.transforms as transforms
 
 import diffusers
-from diffusers import AutoencoderKL, DDIMScheduler
+from diffusers import AutoencoderKL, DDIMScheduler, EulerDiscreteScheduler, EulerAncestralDiscreteScheduler, DPMSolverMultistepScheduler, PNDMScheduler
 
 from tqdm.auto import tqdm
 from transformers import CLIPTextModel, CLIPTokenizer
@@ -43,8 +43,8 @@ def main(args):
 
     # create validation pipeline
     tokenizer    = CLIPTokenizer.from_pretrained(args.pretrained_model_path, subfolder="tokenizer")
-    text_encoder = CLIPTextModel.from_pretrained(args.pretrained_model_path, subfolder="text_encoder").cuda()
-    vae          = AutoencoderKL.from_pretrained(args.pretrained_model_path, subfolder="vae").cuda()
+    text_encoder = CLIPTextModel.from_pretrained(args.pretrained_model_path, subfolder="text_encoder").to(args.device)
+    vae          = AutoencoderKL.from_pretrained(args.pretrained_model_path, subfolder="vae").to(args.device)
 
     sample_idx = 0
     for model_idx, model_config in enumerate(config):
@@ -53,13 +53,15 @@ def main(args):
         model_config.L = model_config.get("L", args.L)
 
         inference_config = OmegaConf.load(model_config.get("inference_config", args.inference_config))
-        unet = UNet3DConditionModel.from_pretrained_2d(args.pretrained_model_path, subfolder="unet", unet_additional_kwargs=OmegaConf.to_container(inference_config.unet_additional_kwargs)).cuda()
+        unet = UNet3DConditionModel.from_pretrained_2d(args.pretrained_model_path, subfolder="unet", unet_additional_kwargs=OmegaConf.to_container(inference_config.unet_additional_kwargs)).to(args.device)
 
         # load controlnet model
         controlnet = controlnet_images = None
         if model_config.get("controlnet_path", "") != "":
-            assert model_config.get("controlnet_images", "") != ""
-            assert model_config.get("controlnet_config", "") != ""
+            if not model_config.get("controlnet_images", ""):
+                raise ValueError("controlnet_images must be specified when controlnet_path is set")
+            if not model_config.get("controlnet_config", ""):
+                raise ValueError("controlnet_config must be specified when controlnet_path is set")
             
             unet.config.num_attention_heads = 8
             unet.config.projection_class_embeddings_input_dim = None
@@ -74,14 +76,15 @@ def main(args):
             controlnet_state_dict = {name: param for name, param in controlnet_state_dict.items() if "pos_encoder.pe" not in name}
             controlnet_state_dict.pop("animatediff_config", "")
             controlnet.load_state_dict(controlnet_state_dict)
-            controlnet.cuda()
+            controlnet.to(args.device)
 
             image_paths = model_config.controlnet_images
             if isinstance(image_paths, str): image_paths = [image_paths]
 
             print(f"controlnet image paths:")
             for path in image_paths: print(path)
-            assert len(image_paths) <= model_config.L
+            if len(image_paths) > model_config.L:
+                raise ValueError(f"Number of controlnet images ({len(image_paths)}) exceeds video length ({model_config.L})")
 
             image_transforms = transforms.Compose([
                 transforms.RandomResizedCrop(
@@ -105,7 +108,7 @@ def main(args):
             for i, image in enumerate(controlnet_images):
                 Image.fromarray((255. * (image.numpy().transpose(1,2,0))).astype(np.uint8)).save(f"{savedir}/control_images/{i}.png")
 
-            controlnet_images = torch.stack(controlnet_images).unsqueeze(0).cuda()
+            controlnet_images = torch.stack(controlnet_images).unsqueeze(0).to(args.device)
             controlnet_images = rearrange(controlnet_images, "b f c h w -> b c f h w")
 
             if controlnet.use_simplified_condition_embedding:
@@ -119,11 +122,22 @@ def main(args):
             unet.enable_xformers_memory_efficient_attention()
             if controlnet is not None: controlnet.enable_xformers_memory_efficient_attention()
 
+        scheduler_kwargs = OmegaConf.to_container(inference_config.noise_scheduler_kwargs)
+        scheduler_map = {
+            "ddim": DDIMScheduler,
+            "euler": EulerDiscreteScheduler,
+            "euler-a": EulerAncestralDiscreteScheduler,
+            "dpm++": DPMSolverMultistepScheduler,
+            "dpm++-karras": lambda **kw: DPMSolverMultistepScheduler(**kw, use_karras_sigmas=True),
+            "pndm": PNDMScheduler,
+        }
+        scheduler = scheduler_map[args.scheduler](**scheduler_kwargs)
+
         pipeline = AnimationPipeline(
             vae=vae, text_encoder=text_encoder, tokenizer=tokenizer, unet=unet,
             controlnet=controlnet,
-            scheduler=DDIMScheduler(**OmegaConf.to_container(inference_config.noise_scheduler_kwargs)),
-        ).to("cuda")
+            scheduler=scheduler,
+        ).to(args.device)
 
         pipeline = load_weights(
             pipeline,
@@ -137,7 +151,15 @@ def main(args):
             dreambooth_model_path      = model_config.get("dreambooth_path", ""),
             lora_model_path            = model_config.get("lora_model_path", ""),
             lora_alpha                 = model_config.get("lora_alpha", 0.8),
-        ).to("cuda")
+        ).to(args.device)
+
+        # memory optimizations
+        pipeline.enable_vae_slicing()
+        if args.half_precision and args.device != "cpu":
+            pipeline.unet.half()
+            pipeline.text_encoder.half()
+            if controlnet is not None:
+                controlnet.half()
 
         prompts      = model_config.prompt
         n_prompts    = list(model_config.n_prompt) * len(prompts) if len(model_config.n_prompt) == 1 else model_config.n_prompt
@@ -194,6 +216,17 @@ if __name__ == "__main__":
 
     parser.add_argument("--without-xformers", action="store_true")
     parser.add_argument("--format", type=str, default="gif", choices=["gif", "mp4"])
+    parser.add_argument("--scheduler", type=str, default="ddim", choices=["ddim", "euler", "euler-a", "dpm++", "dpm++-karras", "pndm"])
+    parser.add_argument("--half-precision", action="store_true", help="Use float16 for lower VRAM usage")
+    parser.add_argument("--device", type=str, default=None, help="Device to use (cuda, mps, cpu). Auto-detected if not specified.")
 
     args = parser.parse_args()
+    if args.device is None:
+        if torch.cuda.is_available():
+            args.device = "cuda"
+        elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+            args.device = "mps"
+        else:
+            args.device = "cpu"
+    print(f"Using device: {args.device}")
     main(args)

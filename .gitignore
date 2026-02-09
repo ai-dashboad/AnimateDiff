@@ -4,8 +4,15 @@ debugs/
 outputs/
 samples/
 __pycache__/
+*.pyc
+*.pyo
 ossutil_output/
 .ossutil_checkpoint/
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+.env
 
 scripts/*
 !scripts/animate.py

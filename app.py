@@ -11,7 +11,7 @@ from datetime import datetime
 from safetensors import safe_open
 
 from diffusers import AutoencoderKL
-from diffusers import DDIMScheduler, EulerDiscreteScheduler, PNDMScheduler
+from diffusers import DDIMScheduler, EulerDiscreteScheduler, PNDMScheduler, DPMSolverMultistepScheduler, EulerAncestralDiscreteScheduler
 from diffusers.utils.import_utils import is_xformers_available
 from transformers import CLIPTextModel, CLIPTokenizer
 
@@ -24,9 +24,12 @@ from animatediff.utils.convert_lora_safetensor_to_diffusers import convert_lora
 
 sample_idx = 0
 scheduler_dict = {
-    "DDIM": DDIMScheduler,
-    "Euler": EulerDiscreteScheduler,
-    "PNDM": PNDMScheduler,
+    "DDIM":      DDIMScheduler,
+    "Euler":     EulerDiscreteScheduler,
+    "Euler A":   EulerAncestralDiscreteScheduler,
+    "DPM++ 2M":  DPMSolverMultistepScheduler,
+    "DPM++ 2M Karras": lambda **kwargs: DPMSolverMultistepScheduler(**kwargs, use_karras_sigmas=True),
+    "PNDM":      PNDMScheduler,
 }
 
 css = """
@@ -47,7 +50,12 @@ default_prompt = "b&w photo of 42 y.o man in black clothes, bald, face, half bod
 default_n_prompt = "semi-realistic, cgi, 3d, render, sketch, cartoon, drawing, anime, text, close up, cropped, out of frame, worst quality, low quality, jpeg artifacts, ugly, duplicate, morbid, mutilated, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, blurry, dehydrated, bad anatomy, bad proportions, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck"
 default_seed = 8893659352891878017
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+if torch.cuda.is_available():
+    device = "cuda"
+elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+    device = "mps"
+else:
+    device = "cpu"
 
 
 class AnimateController:

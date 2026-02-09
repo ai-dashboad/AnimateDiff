@@ -241,18 +241,18 @@ class AnimationPipeline(DiffusionPipeline):
 
         return text_embeddings
 
-    def decode_latents(self, latents):
+    def decode_latents(self, latents, decode_chunk_size=4):
         video_length = latents.shape[2]
         latents = 1 / 0.18215 * latents
         latents = rearrange(latents, "b c f h w -> (b f) c h w")
-        # video = self.vae.decode(latents).sample
         video = []
-        for frame_idx in tqdm(range(latents.shape[0])):
-            video.append(self.vae.decode(latents[frame_idx:frame_idx+1]).sample)
+        for i in range(0, latents.shape[0], decode_chunk_size):
+            chunk = latents[i:i+decode_chunk_size]
+            video.append(self.vae.decode(chunk).sample)
         video = torch.cat(video)
         video = rearrange(video, "(b f) c h w -> b c f h w", f=video_length)
         video = (video / 2 + 0.5).clamp(0, 1)
-        # we always cast to float32 as this does not cause significant overhead and is compatible with bfloa16
+        # we always cast to float32 as this does not cause significant overhead and is compatible with bfloat16
         video = video.cpu().float().numpy()
         return video
 
@@ -404,7 +404,8 @@ class AnimationPipeline(DiffusionPipeline):
 
                 down_block_additional_residuals = mid_block_additional_residual = None
                 if (getattr(self, "controlnet", None) != None) and (controlnet_images != None):
-                    assert controlnet_images.dim() == 5
+                    if controlnet_images.dim() != 5:
+                        raise ValueError(f"controlnet_images must be 5D (got {controlnet_images.dim()}D)")
 
                     controlnet_noisy_latents = latent_model_input
                     controlnet_prompt_embeds = text_embeddings
@@ -419,7 +420,11 @@ class AnimationPipeline(DiffusionPipeline):
                     controlnet_conditioning_mask_shape[1] = 1
                     controlnet_conditioning_mask          = torch.zeros(controlnet_conditioning_mask_shape).to(latents.device)
 
-                    assert controlnet_images.shape[2] >= len(controlnet_image_index)
+                    if controlnet_images.shape[2] < len(controlnet_image_index):
+                        raise ValueError(
+                            f"controlnet_images has {controlnet_images.shape[2]} frames but "
+                            f"{len(controlnet_image_index)} indices were specified"
+                        )
                     controlnet_cond[:,:,controlnet_image_index] = controlnet_images[:,:,:len(controlnet_image_index)]
                     controlnet_conditioning_mask[:,:,controlnet_image_index] = 1
 

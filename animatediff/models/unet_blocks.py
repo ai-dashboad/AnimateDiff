@@ -7,8 +7,6 @@ from .attention import Transformer3DModel
 from .resnet import Downsample3D, ResnetBlock3D, Upsample3D
 from .motion_module import get_motion_module
 
-import pdb
-
 def get_down_block(
     down_block_type,
     num_layers,
