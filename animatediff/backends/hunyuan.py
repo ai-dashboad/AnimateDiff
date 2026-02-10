@@ -22,7 +22,7 @@ from animatediff.core.quantization import get_quantization_config
 logger = logging.getLogger(__name__)
 
 HUNYUAN_MODELS = {
-    "default": "tencent/HunyuanVideo",
+    "default": "hunyuanvideo-community/HunyuanVideo",
 }
 
 

@@ -24,12 +24,12 @@ from animatediff.core.quantization import get_quantization_config
 logger = logging.getLogger(__name__)
 
 WAN_MODELS = {
-    "1.3B": "Wan-AI/Wan2.1-T2V-1.3B",
-    "14B": "Wan-AI/Wan2.1-T2V-14B",
+    "1.3B": "Wan-AI/Wan2.1-T2V-1.3B-Diffusers",
+    "14B": "Wan-AI/Wan2.1-T2V-14B-Diffusers",
 }
 
 WAN_I2V_MODELS = {
-    "14B": "Wan-AI/Wan2.1-I2V-14B-480P",
+    "14B": "Wan-AI/Wan2.1-I2V-14B-480P-Diffusers",
 }
 
 
