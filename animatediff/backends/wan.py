@@ -73,6 +73,16 @@ class WanBackend(BasePipeline):
         PipelineClass = WanImageToVideoPipeline if mode == "i2v" else WanPipeline
         pipe = PipelineClass.from_pretrained(model_path, **load_kwargs)
 
+        # Fix: transformers 5.x doesn't auto-bind shared.weight → encoder.embed_tokens.weight
+        # for UMT5EncoderModel when tie_word_embeddings=false, leaving embed_tokens as zeros.
+        te = pipe.text_encoder
+        if (hasattr(te, "shared") and hasattr(te, "encoder")
+                and hasattr(te.encoder, "embed_tokens")
+                and te.encoder.embed_tokens.weight.abs().sum().item() == 0
+                and te.shared.weight.abs().sum().item() > 0):
+            logger.warning("Fixing UMT5 embed_tokens: binding shared.weight → encoder.embed_tokens.weight")
+            te.encoder.embed_tokens.weight = te.shared.weight
+
         instance = cls(pipe, model_variant=model_variant)
 
         # Apply offloading (must be before .to(device) for cpu offload)
