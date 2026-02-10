@@ -82,16 +82,29 @@ class BasePipeline(ABC):
             return torch.Generator(device=device).manual_seed(seed)
         return None
 
-    def _apply_offloading(self, pipe, strategy: str):
-        """Apply memory offloading strategy to a diffusers pipeline."""
-        if strategy == "model_cpu":
+    def _apply_offloading(self, pipe, strategy: str, device: str = "cuda"):
+        """Apply memory offloading strategy to a diffusers pipeline.
+
+        Note: CPU offloading only works with CUDA. For MPS, we skip offloading
+        and move the full pipeline to the device instead.
+        """
+        # CPU offloading requires CUDA — skip for MPS/CPU and just move to device
+        if device != "cuda" and device != "cpu":
+            logger.info(f"Offloading not supported on {device}, moving pipeline to {device}")
+            pipe.to(device)
+            return
+
+        if strategy == "model_cpu" and hasattr(pipe, "enable_model_cpu_offload"):
             pipe.enable_model_cpu_offload()
-        elif strategy == "sequential_cpu":
+        elif strategy == "sequential_cpu" and hasattr(pipe, "enable_sequential_cpu_offload"):
             pipe.enable_sequential_cpu_offload()
+        else:
+            logger.warning(f"Offload strategy '{strategy}' not available, moving to {device}")
+            pipe.to(device)
 
     def _apply_vae_opts(self, pipe, slicing: bool = True, tiling: bool = False):
         """Apply VAE memory optimizations."""
-        if slicing:
+        if slicing and hasattr(pipe, "enable_vae_slicing"):
             pipe.enable_vae_slicing()
         if tiling and hasattr(pipe, "enable_vae_tiling"):
             pipe.enable_vae_tiling()

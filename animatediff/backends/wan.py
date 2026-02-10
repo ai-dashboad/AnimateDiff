@@ -77,7 +77,7 @@ class WanBackend(BasePipeline):
 
         # Apply offloading (must be before .to(device) for cpu offload)
         if offload_strategy != "none":
-            instance._apply_offloading(pipe, offload_strategy)
+            instance._apply_offloading(pipe, offload_strategy, device=device)
         else:
             pipe.to(device)
 

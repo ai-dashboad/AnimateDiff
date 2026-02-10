@@ -67,7 +67,7 @@ class CogVideoBackend(BasePipeline):
         instance = cls(pipe, model_variant=model_variant)
 
         if offload_strategy != "none":
-            instance._apply_offloading(pipe, offload_strategy)
+            instance._apply_offloading(pipe, offload_strategy, device=device)
         else:
             pipe.to(device)
 

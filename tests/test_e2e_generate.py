@@ -27,26 +27,28 @@ def test_wan_1_3b_generate():
     if torch.cuda.is_available():
         device = "cuda"
         dtype = torch.float16
+        offload = "model_cpu"  # CUDA supports CPU offload
     elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
         device = "mps"
-        dtype = torch.float32  # MPS works best with float32 for this model
+        dtype = torch.float32  # MPS requires float32 for Wan
+        offload = "none"  # MPS: load directly to GPU (no cpu offload support)
     else:
         print("SKIP: No GPU available (need CUDA or MPS)")
         return
 
     print(f"\n{'='*60}")
-    print(f"Device: {device} | dtype: {dtype}")
+    print(f"Device: {device} | dtype: {dtype} | offload: {offload}")
     print(f"{'='*60}")
 
     # Load model (will download ~5GB on first run)
     print("\n[1/3] Loading Wan 2.1 1.3B...")
     t0 = time.time()
     backend = WanBackend.load(
-        model_path=None,  # auto: Wan-AI/Wan2.1-T2V-1.3B
+        model_path=None,  # auto: Wan-AI/Wan2.1-T2V-1.3B-Diffusers
         torch_dtype=dtype,
         device=device,
         quantization="none",
-        offload_strategy="model_cpu",  # save memory
+        offload_strategy=offload,
         enable_vae_slicing=True,
         model_variant="1.3B",
     )
