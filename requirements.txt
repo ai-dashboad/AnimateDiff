@@ -1,6 +1,6 @@
 torch>=2.0.0
 torchvision>=0.15.0
-diffusers>=0.28.0
+diffusers>=0.31.0
 transformers>=4.25.0
 xformers>=0.0.20; sys_platform != 'darwin'
 imageio>=2.27.0
@@ -15,3 +15,4 @@ huggingface_hub>=0.14.0
 packaging
 accelerate>=0.20.0
 peft>=0.6.0
+bitsandbytes>=0.41.0; sys_platform != 'darwin'

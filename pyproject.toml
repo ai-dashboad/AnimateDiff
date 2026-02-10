@@ -4,15 +4,15 @@ build-backend = "setuptools.backends._legacy:_Backend"
 
 [project]
 name = "animatediff"
-version = "2.0.0"
-description = "AnimateDiff: Animate Your Personalized Text-to-Image Diffusion Models without Specific Tuning"
+version = "3.0.0"
+description = "AnimateDiff V3: Unified Video Generation — Wan/HunyuanVideo/CogVideoX/LTX/AnimateDiff on consumer GPUs"
 readme = "README.md"
 license = {text = "Apache-2.0"}
 requires-python = ">=3.9"
 authors = [
     {name = "AnimateDiff Contributors"},
 ]
-keywords = ["diffusion", "video generation", "animation", "stable diffusion"]
+keywords = ["diffusion", "video generation", "animation", "stable diffusion", "wan", "hunyuan", "cogvideo", "ltx"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -27,7 +27,7 @@ classifiers = [
 dependencies = [
     "torch>=2.0.0",
     "torchvision>=0.15.0",
-    "diffusers>=0.28.0",
+    "diffusers>=0.31.0",
     "transformers>=4.25.0",
     "imageio>=2.27.0",
     "imageio-ffmpeg>=0.4.9",
@@ -44,8 +44,9 @@ dependencies = [
 train = ["wandb", "decord>=0.6.0"]
 ui = ["gradio>=3.41.0"]
 xformers = ["xformers>=0.0.20"]
+quantize = ["bitsandbytes>=0.41.0", "torchao>=0.1.0"]
 dev = ["pytest", "ruff"]
-all = ["animatediff[train,ui,xformers,dev]"]
+all = ["animatediff[train,ui,xformers,quantize,dev]"]
 
 [project.scripts]
 animatediff = "scripts.animate:main_cli"
