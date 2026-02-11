@@ -103,10 +103,9 @@ class Wan22Backend(BasePipeline):
             load_kwargs["quantization_config"] = quant_config
 
         # Choose pipeline class
-        if mode == "i2v" and model_variant == "A14B":
+        if mode == "i2v":
             PipelineClass = WanImageToVideoPipeline
         else:
-            # TI2V-5B uses WanPipeline for both T2V and I2V
             PipelineClass = WanPipeline
 
         pipe = PipelineClass.from_pretrained(model_path, **load_kwargs)

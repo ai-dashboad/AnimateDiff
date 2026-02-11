@@ -127,15 +127,19 @@ class AudioGenerator:
         """Generate speech using F5-TTS-MLX (Apple Silicon native)."""
         from f5_tts_mlx.generate import generate
 
-        audio = generate(
-            text=text,
-            ref_audio=ref_audio,
-            ref_text=ref_text or "",
-        )
+        kwargs = dict(generation_text=text, output_path=output_path)
+        if ref_audio:
+            kwargs["ref_audio_path"] = ref_audio
+        if ref_text:
+            kwargs["ref_audio_text"] = ref_text
 
-        # Save to file
-        import soundfile as sf
-        sf.write(output_path, audio, samplerate=24000)
+        audio = generate(**kwargs)
+
+        # generate() saves to output_path if provided, but also returns audio
+        if audio is not None and not os.path.exists(output_path):
+            import soundfile as sf
+            sf.write(output_path, audio, samplerate=24000)
+
         logger.info(f"Generated speech (MLX): {output_path}")
         return output_path
 
