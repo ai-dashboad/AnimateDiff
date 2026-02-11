@@ -2,7 +2,7 @@
 Video Compositor — assemble shots, transitions, audio into final video.
 
 Handles:
-- Shot concatenation with transition effects (cut, fade, dissolve)
+- Shot concatenation with transition effects (cut, fade, dissolve, flash_white)
 - Audio track merging (narration + BGM + SFX)
 - Final video encoding via ffmpeg or moviepy
 """
@@ -41,7 +41,7 @@ class VideoCompositor:
         Args:
             shot_frame_lists: List of frame lists (one per shot).
             output_path: Final output video path.
-            transitions: Transition type between shots ("cut", "fade", "dissolve").
+            transitions: Transition type between shots ("cut", "fade", "dissolve", "flash_white").
             audio_paths: Per-shot audio file paths (narration/dialogue).
             bgm_path: Background music file path.
             bgm_volume: BGM volume relative to narration (0.0-1.0).
@@ -97,6 +97,9 @@ class VideoCompositor:
                     all_frames[-overlap:], frames[:overlap]
                 ))
                 all_frames.extend(frames[overlap:])
+            elif transition == "flash_white":
+                all_frames.extend(self._flash_white_transition(all_frames[-1], frames[0], duration_frames=10))
+                all_frames.extend(frames[1:])
             else:  # cut
                 all_frames.extend(frames)
 
@@ -138,6 +141,38 @@ class VideoCompositor:
             arr_a = np.array(end_frames[i], dtype=np.float32)
             arr_b = np.array(start_frames[i], dtype=np.float32)
             blended = (arr_a * (1 - alpha) + arr_b * alpha).astype(np.uint8)
+            result.append(Image.fromarray(blended))
+
+        return result
+
+    def _flash_white_transition(
+        self, last_frame: Image.Image, first_frame: Image.Image, duration_frames: int = 10
+    ) -> List[Image.Image]:
+        """Create a flash-to-white transition for dramatic moments."""
+        result = []
+        arr_last = np.array(last_frame, dtype=np.float32)
+        arr_first = np.array(first_frame, dtype=np.float32)
+        white = np.full_like(arr_last, 255.0)
+
+        fade_out = duration_frames // 3  # frames to fade to white
+        hold = max(1, duration_frames // 5)  # frames to hold white
+        fade_in = duration_frames - fade_out - hold  # frames to fade from white
+
+        # Fade to white
+        for i in range(fade_out):
+            alpha = (i + 1) / fade_out
+            blended = (arr_last * (1 - alpha) + white * alpha).astype(np.uint8)
+            result.append(Image.fromarray(blended))
+
+        # Hold white
+        white_frame = Image.fromarray(white.astype(np.uint8))
+        for _ in range(hold):
+            result.append(white_frame.copy())
+
+        # Fade from white
+        for i in range(fade_in):
+            alpha = (i + 1) / fade_in
+            blended = (white * (1 - alpha) + arr_first * alpha).astype(np.uint8)
             result.append(Image.fromarray(blended))
 
         return result
@@ -432,3 +467,57 @@ class VideoCompositor:
             logger.info(f"Saved video via ffmpeg: {output_path}")
 
         return output_path
+
+    def apply_color_lut(
+        self,
+        frames: List[Image.Image],
+        lut_name: str = "xianxia_blue_gold",
+    ) -> List[Image.Image]:
+        """Apply color grading LUT to frames.
+
+        Built-in LUTs:
+        - xianxia_blue_gold: Cool shadows + warm highlights for xianxia atmosphere
+        """
+        if lut_name == "xianxia_blue_gold":
+            return [self._apply_xianxia_grade(f) for f in frames]
+        else:
+            logger.warning(f"Unknown LUT: {lut_name}, skipping color grading")
+            return frames
+
+    def _apply_xianxia_grade(self, frame: Image.Image) -> Image.Image:
+        """Apply xianxia blue-gold color grading to a single frame.
+
+        Technique: Split-toning — cool shadows (blue) + warm highlights (gold).
+        """
+        arr = np.array(frame, dtype=np.float32) / 255.0
+
+        # Compute luminance for split-toning
+        lum = 0.299 * arr[:, :, 0] + 0.587 * arr[:, :, 1] + 0.114 * arr[:, :, 2]
+
+        # Shadow mask (dark areas) and highlight mask (bright areas)
+        shadow_mask = np.clip(1.0 - lum * 2, 0, 1)[:, :, np.newaxis]
+        highlight_mask = np.clip(lum * 2 - 1, 0, 1)[:, :, np.newaxis]
+
+        # Blue tint for shadows (subtle)
+        shadow_tint = np.array([0.85, 0.9, 1.1])  # less red, less green, more blue
+
+        # Gold tint for highlights (subtle)
+        highlight_tint = np.array([1.1, 1.05, 0.85])  # more red, slightly more green, less blue
+
+        # Apply split-toning
+        result = arr.copy()
+        result = result * (1.0 - shadow_mask * 0.15) + (result * shadow_tint) * (shadow_mask * 0.15)
+        result = result * (1.0 - highlight_mask * 0.15) + (result * highlight_tint) * (highlight_mask * 0.15)
+
+        # Slight saturation boost
+        gray = lum[:, :, np.newaxis]
+        result = gray + (result - gray) * 1.12
+
+        # Subtle contrast (S-curve approximation)
+        result = np.clip(result, 0, 1)
+        result = result * result * (3 - 2 * result)  # smoothstep for gentle contrast
+        # Blend 30% of the contrast curve with original to keep it subtle
+        result = arr * 0.7 + result * 0.3
+
+        result = np.clip(result * 255, 0, 255).astype(np.uint8)
+        return Image.fromarray(result)
