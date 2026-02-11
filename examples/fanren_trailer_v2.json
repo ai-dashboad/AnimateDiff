@@ -23,28 +23,28 @@
     "韩立_early": {
       "description": "young thin boy age 14, simple brown cloth, messy black hair, poor but determined dark eyes, thin face",
       "image_path": null,
-      "portrait_prompt": "portrait of a young thin Chinese boy age 14, simple ragged brown cloth, messy black hair, poor but determined dark eyes, thin face, anime style, xianxia, high detail, upper body, looking at camera",
+      "portrait_prompt": "cinematic wide angle portrait of a young thin Chinese boy age 14, simple ragged brown cloth, messy black hair, poor but determined dark eyes, thin face, anime style, xianxia, high detail, upper body centered in frame, landscape composition, looking at camera",
       "lora_path": null,
       "lora_scale": 1.0
     },
     "韩立_late": {
       "description": "young male cultivator age 16, grey disciple robes, hair tied in topknot, determined gaze, faint golden aura",
       "image_path": null,
-      "portrait_prompt": "portrait of a young Chinese male cultivator age 16, grey disciple robes with dark trim, hair tied in topknot, determined gaze, faint golden spiritual aura, anime style, xianxia, high detail, upper body, looking at camera",
+      "portrait_prompt": "cinematic wide angle portrait of a young Chinese male cultivator age 16, grey disciple robes with dark trim, hair tied in topknot, determined gaze, faint golden spiritual aura, anime style, xianxia, high detail, upper body centered in frame, landscape composition, looking at camera",
       "lora_path": null,
       "lora_scale": 1.0
     },
     "墨大夫": {
       "description": "sinister old man with long white beard, dark green robes, sharp cunning eyes, hunched posture, alchemist",
       "image_path": null,
-      "portrait_prompt": "portrait of a sinister old Chinese man alchemist, long white beard, dark green robes, sharp cunning eyes, hunched posture, dim candlelit background, anime style, xianxia, high detail, upper body, looking at camera",
+      "portrait_prompt": "cinematic wide angle portrait of a sinister old Chinese man alchemist, long white beard, dark green robes, sharp cunning eyes, hunched posture, dim candlelit background, anime style, xianxia, high detail, upper body centered in frame, landscape composition, looking at camera",
       "lora_path": null,
       "lora_scale": 1.0
     },
     "厉飞雨": {
       "description": "handsome young man in grey disciple robes, short black hair, warm smile, loyal friend, carrying a sword",
       "image_path": null,
-      "portrait_prompt": "portrait of a handsome young Chinese man in grey disciple robes, short black hair, warm friendly smile, sword on back, anime style, xianxia, high detail, upper body, looking at camera",
+      "portrait_prompt": "cinematic wide angle portrait of a handsome young Chinese man in grey disciple robes, short black hair, warm friendly smile, sword on back, anime style, xianxia, high detail, upper body centered in frame, landscape composition, looking at camera",
       "lora_path": null,
       "lora_scale": 1.0
     }

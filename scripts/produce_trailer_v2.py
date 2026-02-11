@@ -288,8 +288,8 @@ def phase2_generate_on_gpu():
             output = pipeline.generate(
                 prompt=prompt,
                 negative_prompt="blurry, low quality, distorted, deformed, ugly, watermark, multiple people",
-                width=480,
-                height=832,
+                width=832,
+                height=480,
                 num_frames=17,
                 num_inference_steps=30,
                 guidance_scale=6.0,
@@ -361,10 +361,10 @@ def phase2_generate_on_gpu():
                 print(f"  Shot {i:2d}: I2V with ref={char_name}")
             else:
                 print(f"  Shot {i:2d}: ⚠️ No portrait for {char_name}, using black frame")
-                ref_image = Image.new("RGB", (480, 832), (0, 0, 0))
+                ref_image = Image.new("RGB", (832, 480), (0, 0, 0))
         else:
             print(f"  Shot {i:2d}: No characters, using black frame")
-            ref_image = Image.new("RGB", (480, 832), (0, 0, 0))
+            ref_image = Image.new("RGB", (832, 480), (0, 0, 0))
 
         num_frames = shot.get("num_frames", 0)
         if num_frames == 0:
@@ -382,8 +382,8 @@ def phase2_generate_on_gpu():
             width=832,
             height=480,
             num_frames=num_frames,
-            num_inference_steps=30,
-            guidance_scale=6.0,
+            num_inference_steps=50,
+            guidance_scale=5.0,
             seed=shot.get("seed", -1),
             image=ref_image,
         )
