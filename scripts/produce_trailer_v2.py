@@ -55,6 +55,39 @@ BGM_URL = "https://peritune.com/wp-content/uploads/2024/03/PeriTune-Wuxia3.mp3"
 BGM_FILENAME = "PeriTune-Wuxia3.mp3"
 
 
+def _score_portrait(img):
+    """Score portrait quality (higher = better). Detects NaN/VAE corruption.
+
+    Uses multiple heuristics since VAE corruption can be statistically subtle:
+    1. Row-to-row pixel jumps (banding artifacts)
+    2. Inter-channel edge correlation (color fringing detection)
+    3. Channel correlation (RGB decorrelation from NaN)
+    """
+    import numpy as np
+    arr = np.array(img, dtype=np.float32)
+
+    # 1. Row smoothness (lower row_jumps = smoother = better)
+    row_jumps = np.abs(arr[1:] - arr[:-1]).mean()
+
+    # 2. Inter-channel Laplacian correlation (edges should be aligned across RGB)
+    laps = []
+    for c in range(3):
+        ch = arr[:, :, c]
+        lap = ch[2:, 1:-1] + ch[:-2, 1:-1] + ch[1:-1, 2:] + ch[1:-1, :-2] - 4 * ch[1:-1, 1:-1]
+        laps.append(lap.flatten())
+    rg_corr = np.corrcoef(laps[0], laps[1])[0, 1]
+    rb_corr = np.corrcoef(laps[0], laps[2])[0, 1]
+    edge_corr = (rg_corr + rb_corr) / 2  # higher = better
+
+    # 3. Channel correlation (RGB should be correlated in natural images)
+    r, g, b = arr[:, :, 0].flatten(), arr[:, :, 1].flatten(), arr[:, :, 2].flatten()
+    ch_corr = (np.corrcoef(r, g)[0, 1] + np.corrcoef(r, b)[0, 1]) / 2
+
+    # Combined score: weighted sum (all terms: higher = better)
+    score = -row_jumps + 10 * edge_corr + 5 * ch_corr
+    return score
+
+
 # ============================================================================
 # Phase 1: Local Preparation (Mac MPS)
 # ============================================================================
@@ -281,8 +314,7 @@ def phase2_generate_on_gpu():
         print(f"  {name}: Generating portrait...")
         print(f"    Prompt: {prompt[:70]}...")
 
-        best_frame = None
-        best_seed = -1
+        candidates = []
         for seed_offset in range(3):  # 3 candidates
             seed = 42 + seed_offset
             output = pipeline.generate(
@@ -300,15 +332,17 @@ def phase2_generate_on_gpu():
                 candidate = output.frames[mid]
                 candidate_path = PORTRAIT_DIR / f"{name}_candidate_{seed_offset}.png"
                 candidate.save(str(candidate_path))
-                print(f"    Candidate {seed_offset} (seed={output.seed}): {candidate_path}")
-                if best_frame is None:
-                    best_frame = candidate
-                    best_seed = output.seed
+                score = _score_portrait(candidate)
+                candidates.append((candidate, output.seed, score))
+                print(f"    Candidate {seed_offset} (seed={output.seed}): score={score:.2f}")
 
-        if best_frame:
+        if candidates:
+            # Pick the candidate with highest quality score
+            candidates.sort(key=lambda x: x[2], reverse=True)
+            best_frame, best_seed, best_score = candidates[0]
             best_frame.save(str(portrait_path))
             portrait_results[name] = str(portrait_path)
-            print(f"    → Default: {portrait_path} (seed={best_seed})")
+            print(f"    → Best: {portrait_path} (seed={best_seed}, score={best_score:.2f})")
 
     # --- Step 2.3: Reload as I2V pipeline for shot generation ---
     print("\n--- Step 2.3: Reloading pipeline in I2V mode ---")
