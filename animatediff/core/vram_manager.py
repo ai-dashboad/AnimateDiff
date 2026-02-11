@@ -90,8 +90,19 @@ ANIMATEDIFF_TIERS = [
     (0.0,  InferenceConfig(model_variant="sd15", quantization="none", max_width=512, max_height=512, max_frames=16, offload_strategy="sequential_cpu", torch_dtype=torch.float32)),
 ]
 
+# Wan 2.2 tiers: A14B needs CUDA (FP8 MoE), TI2V-5B works on MPS
+WAN22_TIERS = [
+    (40.0, InferenceConfig(model_variant="A14B", quantization="none", max_width=1280, max_height=720, max_frames=81, offload_strategy="none", torch_dtype=torch.bfloat16)),
+    (24.0, InferenceConfig(model_variant="A14B", quantization="nf4", max_width=1280, max_height=720, max_frames=81, offload_strategy="model_cpu", torch_dtype=torch.bfloat16)),
+    (16.0, InferenceConfig(model_variant="5B", quantization="none", max_width=1280, max_height=704, max_frames=121, offload_strategy="none", torch_dtype=torch.bfloat16)),
+    (10.0, InferenceConfig(model_variant="5B", quantization="nf4", max_width=1280, max_height=704, max_frames=81, offload_strategy="model_cpu", enable_vae_tiling=True)),
+    (0.0,  InferenceConfig(model_variant="5B", quantization="nf4", max_width=704, max_height=480, max_frames=49, offload_strategy="sequential_cpu", enable_vae_tiling=True, torch_dtype=torch.float32)),
+]
+
 BACKEND_TIERS = {
     "wan": WAN_TIERS,
+    "wan22": WAN22_TIERS,
+    "wan22_animate": WAN22_TIERS,  # same hardware profile as wan22
     "hunyuan": HUNYUAN_TIERS,
     "cogvideo": COGVIDEO_TIERS,
     "ltx": LTX_TIERS,
@@ -113,7 +124,7 @@ class VRAMManager:
         if torch.cuda.is_available():
             props = torch.cuda.get_device_properties(0)
             cc = (props.major, props.minor)
-            vram_gb = props.total_mem / (1024 ** 3)
+            vram_gb = getattr(props, 'total_memory', getattr(props, 'total_mem', 0)) / (1024 ** 3)
             return GPUProfile(
                 name=props.name,
                 vram_gb=vram_gb,
@@ -170,10 +181,12 @@ class VRAMManager:
     def best_backend(self) -> str:
         """Auto-select the best backend for current GPU."""
         vram = self.profile.vram_gb
-        if vram >= 12:
-            return "wan"
+        if vram >= 16:
+            return "wan22"  # Wan 2.2 TI2V-5B (dense, MPS-compatible)
+        elif vram >= 12:
+            return "wan22"
         elif vram >= 8:
-            return "wan"
+            return "wan"    # Wan 2.1 1.3B as fallback
         elif vram >= 6:
             return "cogvideo"
         else:

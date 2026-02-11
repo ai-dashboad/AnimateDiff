@@ -1,0 +1,135 @@
+{
+  "title": "凡人修仙传 · 炼气篇 — 预告片",
+  "style": "anime, xianxia, high detail, cinematic lighting, masterpiece quality, dramatic atmosphere",
+  "negative_prompt": "blurry, low quality, distorted, deformed, ugly, watermark, 3d, realistic, photo",
+  "characters": {
+    "韩立": {
+      "description": "young thin boy age 14 with simple brown cloth, messy black hair, poor but determined eyes, later wearing grey disciple robes",
+      "image_path": null,
+      "lora_path": null,
+      "lora_scale": 1.0
+    },
+    "墨大夫": {
+      "description": "sinister old man with long white beard, dark green robes, sharp cunning eyes, hunched posture, alchemist",
+      "image_path": null,
+      "lora_path": null,
+      "lora_scale": 1.0
+    },
+    "厉飞雨": {
+      "description": "handsome young man in grey disciple robes, short black hair, warm smile, loyal friend, carrying a sword",
+      "image_path": null,
+      "lora_path": null,
+      "lora_scale": 1.0
+    }
+  },
+  "shots": [
+    {
+      "prompt": "a poor small village at the foot of misty mountains, ancient China, thatched roof houses, a thin young boy in ragged brown clothes standing at the village entrance looking at the distant mountains with longing, golden sunset light",
+      "duration_seconds": 5.0,
+      "camera": "pan right",
+      "characters": ["韩立"],
+      "emotion": "serene",
+      "scene": "韩立的故乡 — 贫寒少年仰望远山",
+      "transition": "dissolve"
+    },
+    {
+      "prompt": "a grand mountain sect gate with ancient Chinese architecture, stone steps leading up into the clouds, cherry blossom petals falling, the words Seven Mysteries carved in stone, a small boy climbing the steps alone, epic wide shot",
+      "duration_seconds": 5.0,
+      "camera": "tilt up",
+      "characters": ["韩立"],
+      "emotion": "epic",
+      "scene": "七玄门山门 — 韩立拜入宗门",
+      "transition": "cut"
+    },
+    {
+      "prompt": "close-up of a sinister old man with long white beard and dark green robes, dim candlelit room filled with medicine bottles and herbs, cunning smile, shadows on face, ominous atmosphere",
+      "duration_seconds": 4.0,
+      "camera": "zoom in",
+      "characters": ["墨大夫"],
+      "emotion": "mysterious",
+      "scene": "墨大夫 — 初见韩立的阴险笑容",
+      "transition": "cut"
+    },
+    {
+      "prompt": "a young boy sitting cross-legged in a dark stone cave, struggling to meditate, faint wisps of spiritual energy around his body, sweat on forehead, candlelight flickering, painful expression, anime style",
+      "duration_seconds": 5.0,
+      "camera": "static",
+      "characters": ["韩立"],
+      "emotion": "determined",
+      "scene": "洞府苦修 — 炼气入门的痛苦",
+      "transition": "dissolve"
+    },
+    {
+      "prompt": "two young men in grey disciple robes sparring with wooden swords on a mountain training ground, cherry blossoms falling, one smiling warmly, dynamic action, anime fight choreography, morning light",
+      "duration_seconds": 4.0,
+      "camera": "orbit",
+      "characters": ["韩立", "厉飞雨"],
+      "emotion": "happy",
+      "scene": "与厉飞雨切磋 — 唯一的友情",
+      "transition": "cut"
+    },
+    {
+      "prompt": "a young man in grey robes standing before a glowing ancient scroll, mysterious green light emanating from the text, his eyes widening in shock and wonder, dark room with floating dust particles",
+      "duration_seconds": 4.0,
+      "camera": "dolly forward",
+      "characters": ["韩立"],
+      "emotion": "mysterious",
+      "scene": "发现长春功秘籍 — 命运的转折",
+      "transition": "dissolve"
+    },
+    {
+      "prompt": "the sinister old man casting dark purple magic at a young disciple, violent energy waves, the boy being thrown backward, betrayal scene, dramatic contrast of dark purple vs faint golden light, intense anime action",
+      "duration_seconds": 4.0,
+      "camera": "zoom out",
+      "characters": ["墨大夫", "韩立"],
+      "emotion": "fearful",
+      "scene": "墨大夫的背叛 — 夺舍之战",
+      "transition": "cut"
+    },
+    {
+      "prompt": "extreme close-up of a young man's eye reflecting fire and determination, tears evaporating into spiritual energy, pupil glowing faint gold, hair blowing upward from energy surge, anime dramatic moment",
+      "duration_seconds": 3.0,
+      "camera": "zoom in",
+      "characters": ["韩立"],
+      "emotion": "determined",
+      "scene": "觉醒 — 绝境中爆发",
+      "transition": "cut"
+    },
+    {
+      "prompt": "a young cultivator unleashing a burst of golden spiritual energy, the old man's dark magic shattering, explosive clash of gold and purple energy waves destroying the room, debris flying, anime battle climax",
+      "duration_seconds": 4.0,
+      "camera": "zoom out",
+      "characters": ["韩立", "墨大夫"],
+      "emotion": "epic",
+      "scene": "反杀墨大夫 — 金光破暗",
+      "transition": "fade"
+    },
+    {
+      "prompt": "a young man in torn grey robes standing alone on a cliff edge at night, looking at a vast moonlit landscape of mountains and rivers below, wind blowing his hair, the path of cultivation stretching ahead, lonely but free",
+      "duration_seconds": 5.0,
+      "camera": "pan left",
+      "characters": ["韩立"],
+      "emotion": "serene",
+      "scene": "踏上修仙路 — 孤独的自由",
+      "transition": "dissolve"
+    },
+    {
+      "prompt": "rapid montage: a flying sword cutting through clouds, a green pill glowing in an alchemy furnace, a talisman bursting with lightning, a young man leaping between rooftops at night, anime action sequence, dynamic angles",
+      "duration_seconds": 4.0,
+      "camera": "static",
+      "characters": ["韩立"],
+      "emotion": "epic",
+      "scene": "修仙世界一瞥 — 飞剑丹药符箓",
+      "transition": "cut"
+    },
+    {
+      "prompt": "a young cultivator in white robes standing on a flying sword above the clouds at sunrise, camera orbiting around him, robes and hair flowing in the wind, golden light behind, vast world below, title card moment, epic wide shot",
+      "duration_seconds": 5.0,
+      "camera": "orbit",
+      "characters": ["韩立"],
+      "emotion": "epic",
+      "scene": "御剑飞行 — 凡人亦可修仙",
+      "transition": "fade"
+    }
+  ]
+}

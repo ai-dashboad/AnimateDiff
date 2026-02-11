@@ -1,0 +1,210 @@
+{
+  "title": "凡人修仙传 · 炼气篇 — 预告片 V2",
+  "style": "anime, xianxia, high detail, cinematic lighting, masterpiece quality, dramatic atmosphere",
+  "negative_prompt": "blurry, low quality, distorted, deformed, ugly, watermark, 3d, realistic, photo",
+  "voice_profiles": {
+    "narrator": {
+      "description": "Male narrator, deep authoritative voice, Chinese audiobook style",
+      "ref_audio": null,
+      "ref_text": null
+    },
+    "moDoctor": {
+      "description": "Old sinister male voice, raspy and cunning",
+      "ref_audio": null,
+      "ref_text": null
+    },
+    "hanLi": {
+      "description": "Young male voice, 14-16 years old, determined but quiet",
+      "ref_audio": null,
+      "ref_text": null
+    }
+  },
+  "characters": {
+    "韩立_early": {
+      "description": "young thin boy age 14, simple brown cloth, messy black hair, poor but determined dark eyes, thin face",
+      "image_path": null,
+      "portrait_prompt": "portrait of a young thin Chinese boy age 14, simple ragged brown cloth, messy black hair, poor but determined dark eyes, thin face, anime style, xianxia, high detail, upper body, looking at camera",
+      "lora_path": null,
+      "lora_scale": 1.0
+    },
+    "韩立_late": {
+      "description": "young male cultivator age 16, grey disciple robes, hair tied in topknot, determined gaze, faint golden aura",
+      "image_path": null,
+      "portrait_prompt": "portrait of a young Chinese male cultivator age 16, grey disciple robes with dark trim, hair tied in topknot, determined gaze, faint golden spiritual aura, anime style, xianxia, high detail, upper body, looking at camera",
+      "lora_path": null,
+      "lora_scale": 1.0
+    },
+    "墨大夫": {
+      "description": "sinister old man with long white beard, dark green robes, sharp cunning eyes, hunched posture, alchemist",
+      "image_path": null,
+      "portrait_prompt": "portrait of a sinister old Chinese man alchemist, long white beard, dark green robes, sharp cunning eyes, hunched posture, dim candlelit background, anime style, xianxia, high detail, upper body, looking at camera",
+      "lora_path": null,
+      "lora_scale": 1.0
+    },
+    "厉飞雨": {
+      "description": "handsome young man in grey disciple robes, short black hair, warm smile, loyal friend, carrying a sword",
+      "image_path": null,
+      "portrait_prompt": "portrait of a handsome young Chinese man in grey disciple robes, short black hair, warm friendly smile, sword on back, anime style, xianxia, high detail, upper body, looking at camera",
+      "lora_path": null,
+      "lora_scale": 1.0
+    }
+  },
+  "shots": [
+    {
+      "shot_id": 0,
+      "prompt": "a poor small village at the foot of misty mountains, ancient China, thatched roof houses, a thin young boy in ragged brown clothes standing at the village entrance looking at the distant mountains with longing, golden sunset light",
+      "duration_seconds": 0,
+      "camera": "pan right",
+      "characters": ["韩立_early"],
+      "emotion": "serene",
+      "scene": "韩立的故乡 — 贫寒少年仰望远山",
+      "transition": "dissolve",
+      "narration": "他叫韩立，一个出身贫寒的山村少年。为了改变家人的命运，他踏上了一条未知的路。",
+      "lip_sync": false,
+      "voice_id": "narrator"
+    },
+    {
+      "shot_id": 1,
+      "prompt": "a grand mountain sect gate with ancient Chinese architecture, stone steps leading up into the clouds, cherry blossom petals falling, the words Seven Mysteries carved in stone, a small boy climbing the steps alone, epic wide shot",
+      "duration_seconds": 0,
+      "camera": "tilt up",
+      "characters": ["韩立_early"],
+      "emotion": "epic",
+      "scene": "七玄门山门 — 韩立拜入宗门",
+      "transition": "cut",
+      "narration": "七玄门，修仙界的末流宗门。在这里，资质决定一切。而韩立，是最没有资质的那一个。",
+      "lip_sync": false,
+      "voice_id": "narrator"
+    },
+    {
+      "shot_id": 2,
+      "prompt": "close-up of a sinister old man with long white beard and dark green robes, dim candlelit room filled with medicine bottles and herbs, cunning smile turning to camera, shadows on face, ominous atmosphere, lips moving as he speaks",
+      "duration_seconds": 0,
+      "camera": "zoom in",
+      "characters": ["墨大夫"],
+      "emotion": "mysterious",
+      "scene": "墨大夫 — 初见韩立的阴险评价",
+      "transition": "cut",
+      "narration": "这孩子……资质虽然平庸，但这份韧性……或许正合老夫所用。",
+      "lip_sync": true,
+      "voice_id": "moDoctor"
+    },
+    {
+      "shot_id": 3,
+      "prompt": "a young boy sitting cross-legged in a dark stone cave, struggling to meditate, faint wisps of spiritual energy around his body, sweat on forehead, candlelight flickering, painful expression, anime style",
+      "duration_seconds": 0,
+      "camera": "static",
+      "characters": ["韩立_early"],
+      "emotion": "determined",
+      "scene": "洞府苦修 — 炼气入门的痛苦",
+      "transition": "dissolve",
+      "narration": "别人三天能学会的口诀，他要练上一个月。别人不屑的基础功法，他日夜苦修。",
+      "lip_sync": false,
+      "voice_id": "narrator"
+    },
+    {
+      "shot_id": 4,
+      "prompt": "two young men in grey disciple robes sparring with wooden swords on a mountain training ground, cherry blossoms falling, one smiling warmly, dynamic action, anime fight choreography, morning light",
+      "duration_seconds": 0,
+      "camera": "orbit",
+      "characters": ["韩立_late", "厉飞雨"],
+      "emotion": "happy",
+      "scene": "与厉飞雨切磋 — 唯一的友情",
+      "transition": "cut",
+      "narration": "在七玄门的日子里，只有一个人把他当作朋友——厉飞雨。",
+      "lip_sync": false,
+      "voice_id": "narrator"
+    },
+    {
+      "shot_id": 5,
+      "prompt": "a young man in grey robes standing before a glowing ancient scroll, mysterious green light emanating from the text, his eyes widening in shock and wonder, dark room with floating dust particles",
+      "duration_seconds": 0,
+      "camera": "dolly forward",
+      "characters": ["韩立_late"],
+      "emotion": "mysterious",
+      "scene": "发现长春功秘籍 — 命运的转折",
+      "transition": "dissolve",
+      "narration": "直到有一天，他发现了一卷被遗忘的古老秘籍——长春功。没有人知道，这就是他命运的转折点。",
+      "lip_sync": false,
+      "voice_id": "narrator"
+    },
+    {
+      "shot_id": 6,
+      "prompt": "the sinister old man casting dark purple magic at a young disciple, violent energy waves, the boy being thrown backward, betrayal scene, dramatic contrast of dark purple vs faint golden light, intense anime action",
+      "duration_seconds": 0,
+      "camera": "zoom out",
+      "characters": ["墨大夫", "韩立_late"],
+      "emotion": "fearful",
+      "scene": "墨大夫的背叛 — 夺舍之战",
+      "transition": "cut",
+      "narration": "但修仙路上，最大的敌人往往不是妖兽，而是身边的人。",
+      "lip_sync": false,
+      "voice_id": "narrator"
+    },
+    {
+      "shot_id": 7,
+      "prompt": "extreme close-up of a young man's eye reflecting fire and determination, tears evaporating into spiritual energy, pupil glowing faint gold, hair blowing upward from energy surge, anime dramatic moment",
+      "duration_seconds": 0,
+      "camera": "zoom in",
+      "characters": ["韩立_late"],
+      "emotion": "determined",
+      "scene": "觉醒 — 绝境中爆发",
+      "transition": "cut",
+      "narration": "在绝境之中，他第一次触碰到了……真正的力量。",
+      "lip_sync": false,
+      "voice_id": "narrator"
+    },
+    {
+      "shot_id": 8,
+      "prompt": "a young cultivator unleashing a burst of golden spiritual energy, the old man's dark magic shattering, explosive clash of gold and purple energy waves destroying the room, debris flying, anime battle climax",
+      "duration_seconds": 0,
+      "camera": "zoom out",
+      "characters": ["韩立_late", "墨大夫"],
+      "emotion": "epic",
+      "scene": "反杀墨大夫 — 金光破暗",
+      "transition": "fade",
+      "narration": "金光破碎黑暗。这一刻，他不再是那个任人摆布的凡人。",
+      "lip_sync": false,
+      "voice_id": "narrator"
+    },
+    {
+      "shot_id": 9,
+      "prompt": "close-up of a young man in torn grey robes standing alone on a cliff edge at night, moonlit landscape of mountains below, wind blowing hair, eyes reflecting moonlight, lips slightly parted as speaking inner thoughts",
+      "duration_seconds": 0,
+      "camera": "pan left",
+      "characters": ["韩立_late"],
+      "emotion": "determined",
+      "scene": "踏上修仙路 — 韩立的决心",
+      "transition": "dissolve",
+      "narration": "从今往后，我的路……由我自己来走。",
+      "lip_sync": true,
+      "voice_id": "hanLi"
+    },
+    {
+      "shot_id": 10,
+      "prompt": "rapid montage: a flying sword cutting through clouds, a green pill glowing in an alchemy furnace, a talisman bursting with lightning, a young man leaping between rooftops at night, anime action sequence, dynamic angles",
+      "duration_seconds": 0,
+      "camera": "static",
+      "characters": ["韩立_late"],
+      "emotion": "epic",
+      "scene": "修仙世界一瞥 — 飞剑丹药符箓",
+      "transition": "cut",
+      "narration": "飞剑、丹药、符箓、法宝……修仙的世界，比他想象的更加广阔，也更加危险。",
+      "lip_sync": false,
+      "voice_id": "narrator"
+    },
+    {
+      "shot_id": 11,
+      "prompt": "a young cultivator in white robes standing on a flying sword above the clouds at sunrise, camera orbiting around him, robes and hair flowing in the wind, golden light behind, vast world below, title card moment, epic wide shot",
+      "duration_seconds": 0,
+      "camera": "orbit",
+      "characters": ["韩立_late"],
+      "emotion": "epic",
+      "scene": "御剑飞行 — 凡人亦可修仙",
+      "transition": "fade",
+      "narration": "凡人修仙传——哪怕是最平凡的人，也可以走出一条通天之路。",
+      "lip_sync": false,
+      "voice_id": "narrator"
+    }
+  ]
+}

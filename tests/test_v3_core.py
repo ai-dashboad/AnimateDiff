@@ -120,7 +120,7 @@ class TestVRAMManager:
         from animatediff.core.vram_manager import VRAMManager
         vm = VRAMManager()
         best = vm.best_backend()
-        assert best in ("wan", "cogvideo", "animatediff")
+        assert best in ("wan", "wan22", "cogvideo", "animatediff")
 
     def test_get_vram_manager_singleton(self):
         from animatediff.core.vram_manager import get_vram_manager

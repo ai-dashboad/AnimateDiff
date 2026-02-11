@@ -17,9 +17,9 @@ class TestBackendRegistry:
         assert "ltx" in backends
         assert "animatediff" in backends
 
-    def test_registry_has_five_backends(self):
+    def test_registry_has_seven_backends(self):
         from animatediff.backends import BACKEND_REGISTRY
-        assert len(BACKEND_REGISTRY) == 5
+        assert len(BACKEND_REGISTRY) == 7
 
     def test_get_backend_wan(self):
         from animatediff.backends import get_backend

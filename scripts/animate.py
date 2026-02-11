@@ -103,6 +103,8 @@ def run_backend(args):
     # Backend-specific kwargs
     if backend_name == "wan":
         load_kwargs["model_variant"] = args.model_variant or rec.model_variant
+    elif backend_name == "wan22":
+        load_kwargs["model_variant"] = args.model_variant or rec.model_variant
     elif backend_name == "cogvideo":
         load_kwargs["model_variant"] = args.model_variant or rec.model_variant
     elif backend_name == "animatediff":
@@ -513,7 +515,7 @@ Examples:
 
     # ---- NEW: Multi-backend mode ----
     parser.add_argument("--backend", type=str, default=None,
-                        choices=["auto", "wan", "hunyuan", "cogvideo", "ltx", "animatediff"],
+                        choices=["auto", "wan", "wan22", "wan22_animate", "hunyuan", "cogvideo", "ltx", "animatediff"],
                         help="Video generation backend (default: auto-detect or use --pipeline for legacy)")
     parser.add_argument("--prompt", type=str, default=None, help="Text prompt for video generation")
     parser.add_argument("--negative-prompt", type=str, default=None, help="Negative prompt")

@@ -1,0 +1,75 @@
+{
+  "title": "凡人修仙传 — 韩立悟道",
+  "style": "anime, xianxia, high detail, cinematic lighting, masterpiece quality",
+  "negative_prompt": "blurry, low quality, distorted, deformed, ugly, watermark",
+  "characters": {
+    "韩立": {
+      "description": "young male cultivator in white robes, dark hair in topknot, determined eyes, golden light aura",
+      "image_path": null,
+      "lora_path": null,
+      "lora_scale": 1.0
+    },
+    "南宫婉": {
+      "description": "beautiful young woman in blue robes, flowing long hair, gentle expression, spiritual energy",
+      "image_path": null,
+      "lora_path": null,
+      "lora_scale": 1.0
+    }
+  },
+  "shots": [
+    {
+      "prompt": "a young male cultivator standing on a mountain peak at dawn, white robes flowing in the wind, golden sunrise behind, clouds below, epic scale, wide establishing shot",
+      "duration_seconds": 5.0,
+      "camera": "static",
+      "characters": ["韩立"],
+      "emotion": "serene",
+      "scene": "Mountain peak at dawn",
+      "transition": "cut"
+    },
+    {
+      "prompt": "close-up of a young cultivator's face, eyes closed in meditation, golden spiritual energy particles flowing around, serene expression gradually shifting to determination",
+      "duration_seconds": 4.0,
+      "camera": "zoom in",
+      "characters": ["韩立"],
+      "emotion": "determined",
+      "scene": "Meditation close-up",
+      "transition": "dissolve"
+    },
+    {
+      "prompt": "a cultivator opens eyes suddenly with golden light bursting from pupils, spiritual energy exploding outward in waves, dramatic lighting, hair flowing upward",
+      "duration_seconds": 3.0,
+      "camera": "zoom out",
+      "characters": ["韩立"],
+      "emotion": "epic",
+      "scene": "Breakthrough moment",
+      "transition": "fade"
+    },
+    {
+      "prompt": "wide shot of mountain range, massive golden spiritual energy pillar shooting into the sky from the peak, clouds parting, birds scattering, heaven and earth responding",
+      "duration_seconds": 5.0,
+      "camera": "pan right",
+      "characters": [],
+      "emotion": "epic",
+      "scene": "Energy pillar wide shot",
+      "transition": "dissolve"
+    },
+    {
+      "prompt": "a beautiful woman in blue robes looking up at the golden pillar from a distant cliff, wind blowing her hair, expression of surprise and admiration, spiritual energy in the air",
+      "duration_seconds": 4.0,
+      "camera": "dolly forward",
+      "characters": ["南宫婉"],
+      "emotion": "amazed",
+      "scene": "Nangong Wan observing",
+      "transition": "cut"
+    },
+    {
+      "prompt": "the cultivator floating above the mountain peak surrounded by golden light, arms outstretched, robes flowing, ancient symbols appearing around him, transcendent moment",
+      "duration_seconds": 5.0,
+      "camera": "orbit",
+      "characters": ["韩立"],
+      "emotion": "transcendent",
+      "scene": "Ascension",
+      "transition": "fade"
+    }
+  ]
+}
