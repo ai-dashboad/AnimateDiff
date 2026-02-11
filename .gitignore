@@ -1,6 +1,7 @@
 wandb/
 *debug*
 debugs/
+output/
 outputs/
 samples/
 __pycache__/
