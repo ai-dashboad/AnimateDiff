@@ -66,16 +66,54 @@ class BasePipeline(ABC):
         ...
 
     def save(self, output: VideoOutput, path: str, fps: int = 8):
-        """Save VideoOutput to a GIF or MP4 file."""
-        from diffusers.utils import export_to_gif, export_to_video
+        """Save VideoOutput to a GIF or MP4 file.
 
+        For MP4, uses ffmpeg with H.264 encoding for high quality.
+        Falls back to diffusers export_to_video (OpenCV/MPEG-4) if ffmpeg
+        is unavailable.
+        """
         os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
 
         if path.endswith(".mp4"):
-            export_to_video(output.frames, path, fps=fps)
+            self._save_mp4_ffmpeg(output.frames, path, fps)
         else:
+            from diffusers.utils import export_to_gif
             export_to_gif(output.frames, path)
         logger.info(f"Saved video to {path}")
+
+    @staticmethod
+    def _save_mp4_ffmpeg(frames: list, path: str, fps: int):
+        """Save frames to MP4 using ffmpeg pipe (H.264, CRF 18)."""
+        import subprocess
+        import shutil
+
+        if not shutil.which("ffmpeg"):
+            from diffusers.utils import export_to_video
+            logger.warning("ffmpeg not found, falling back to OpenCV export (lower quality)")
+            export_to_video(frames, path, fps=fps)
+            return
+
+        w, h = frames[0].size
+        cmd = [
+            "ffmpeg", "-y",
+            "-f", "rawvideo", "-pix_fmt", "rgb24",
+            "-s", f"{w}x{h}", "-r", str(fps),
+            "-i", "pipe:0",
+            "-c:v", "libx264", "-crf", "18", "-preset", "medium",
+            "-pix_fmt", "yuv420p", "-an",
+            path,
+        ]
+        proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+        import numpy as np
+        for frame in frames:
+            proc.stdin.write(np.array(frame).tobytes())
+        proc.stdin.close()
+        proc.wait()
+        if proc.returncode != 0:
+            err = proc.stderr.read().decode()[-200:]
+            logger.warning(f"ffmpeg encode failed: {err}")
+            from diffusers.utils import export_to_video
+            export_to_video(frames, path, fps=fps)
 
     def _make_generator(self, seed: int, device: str) -> Optional[torch.Generator]:
         if seed >= 0:
