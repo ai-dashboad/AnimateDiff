@@ -8,3 +8,5 @@ from animatediff.core.distillation import (
     get_distillation_manager,
     recommended_distillation,
 )
+from animatediff.core.reference_parser import Reference, ReferenceSet, ReferenceParser
+from animatediff.core.director import DirectorEngine, ExecutionPlan, ShotPlan, ShotResult

@@ -47,6 +47,7 @@ class ShotSpec:
     narration: str = ""  # narration/dialogue text for this shot (used by TTS)
     lip_sync: bool = False  # whether to apply lip sync post-processing
     voice_id: str = ""  # voice profile key for TTS (e.g., "narrator", "moDoctor")
+    references: List[Any] = field(default_factory=list)  # per-shot Reference objects or dicts
     metadata: Dict[str, Any] = field(default_factory=dict)
 
 
@@ -234,6 +235,29 @@ Rules:
 
         # Parse shots
         for i, shot_data in enumerate(data.get("shots", [])):
+            # Parse per-shot references (list of dicts or "@" strings)
+            raw_refs = shot_data.get("references", [])
+            parsed_refs: list = []
+            if raw_refs:
+                try:
+                    from animatediff.core.reference_parser import ReferenceParser
+                    parser = ReferenceParser()
+                    if isinstance(raw_refs, list) and raw_refs and isinstance(raw_refs[0], dict):
+                        parsed_refs = parser.parse_dict_list(raw_refs).refs
+                    elif isinstance(raw_refs, str):
+                        parsed_refs = parser.parse_text(raw_refs).refs
+                except ImportError:
+                    parsed_refs = raw_refs  # Keep raw if parser unavailable
+
+            # Extract extra fields into metadata
+            known_keys = {
+                "shot_id", "prompt", "negative_prompt", "duration_seconds",
+                "camera", "characters", "emotion", "scene", "transition",
+                "width", "height", "num_frames", "seed", "narration",
+                "lip_sync", "voice_id", "references",
+            }
+            extra_meta = {k: v for k, v in shot_data.items() if k not in known_keys}
+
             shot = ShotSpec(
                 shot_id=i,
                 prompt=self._build_prompt(shot_data.get("prompt", ""), board.style),
@@ -251,6 +275,8 @@ Rules:
                 narration=shot_data.get("narration", ""),
                 lip_sync=shot_data.get("lip_sync", False),
                 voice_id=shot_data.get("voice_id", ""),
+                references=parsed_refs,
+                metadata=extra_meta,
             )
             board.shots.append(shot)
 
@@ -343,6 +369,11 @@ def save_storyboard(board: StoryBoard, path: str):
                 **({"narration": s.narration} if s.narration else {}),
                 **({"lip_sync": s.lip_sync} if s.lip_sync else {}),
                 **({"voice_id": s.voice_id} if s.voice_id else {}),
+                **({"references": [
+                    r.to_dict() if hasattr(r, "to_dict") else r
+                    for r in s.references
+                ]} if s.references else {}),
+                **(s.metadata if s.metadata else {}),
             }
             for s in board.shots
         ],
