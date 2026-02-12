@@ -258,10 +258,12 @@ Rules:
 
     def _build_prompt(self, text: str, style: str) -> str:
         """Combine shot text with global style."""
+        text = text or ""
         parts = []
         if style:
             parts.append(style)
-        parts.append(text.strip())
+        if text.strip():
+            parts.append(text.strip())
         return ", ".join(parts)
 
     def _detect_camera(self, text: str) -> str:

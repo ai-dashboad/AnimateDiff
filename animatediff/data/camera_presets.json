@@ -1,0 +1,311 @@
+{
+  "version": "1.0",
+  "description": "Camera movement presets for xianxia video generation (AnimateDiff V4 StoryEngine)",
+  "categories": {
+    "aerial": {"name_zh": "空中", "name_en": "Aerial"},
+    "dynamic": {"name_zh": "动态", "name_en": "Dynamic"},
+    "dramatic": {"name_zh": "戏剧", "name_en": "Dramatic"},
+    "intimate": {"name_zh": "特写", "name_en": "Intimate"},
+    "establishing": {"name_zh": "建立", "name_en": "Establishing"},
+    "xianxia_specific": {"name_zh": "仙侠", "name_en": "Xianxia Specific"}
+  },
+  "presets": [
+    {
+      "id": "fly_through_clouds",
+      "category": "aerial",
+      "name_zh": "穿云飞行",
+      "name_en": "Fly Through Clouds",
+      "prompt_suffix": "continuous forward-moving aerial shot gliding through layers of misty clouds, camera pushing through volumetric fog revealing mountain peaks and ancient temples beyond, smooth parallax motion with depth, atmospheric perspective shifting as clouds part",
+      "negative_prompt_suffix": "static camera, locked off shot, ground level, no camera movement, talking head, selfie angle",
+      "recommended_duration": 5.0,
+      "recommended_fps": 24,
+      "motion_intensity": "high"
+    },
+    {
+      "id": "birds_eye_descend",
+      "category": "aerial",
+      "name_zh": "俯瞰下降",
+      "name_en": "Bird's Eye Descend",
+      "prompt_suffix": "top-down bird's eye view camera slowly descending toward the ground, altitude gradually decreasing to reveal terrain details, smooth vertical dolly downward, world expanding in frame as camera drops closer",
+      "negative_prompt_suffix": "static camera, ground level perspective, upward angle, no vertical movement, handheld shake",
+      "recommended_duration": 4.0,
+      "recommended_fps": 24,
+      "motion_intensity": "medium"
+    },
+    {
+      "id": "crane_up_reveal",
+      "category": "aerial",
+      "name_zh": "升机揭示",
+      "name_en": "Crane Up Reveal",
+      "prompt_suffix": "camera crane rising upward from ground level to reveal a vast landscape beyond, smooth continuous vertical ascent, foreground subject shrinking as the epic scale of the world is unveiled above, dramatic perspective shift from intimate to grand",
+      "negative_prompt_suffix": "static camera, descending motion, ground locked, no vertical movement, tight framing throughout",
+      "recommended_duration": 5.0,
+      "recommended_fps": 24,
+      "motion_intensity": "medium"
+    },
+    {
+      "id": "soaring_above_mountains",
+      "category": "aerial",
+      "name_zh": "翱翔山巅",
+      "name_en": "Soaring Above Mountains",
+      "prompt_suffix": "sweeping aerial dolly shot soaring above jagged mountain ridges, camera banking and gliding like a bird in flight, parallax between foreground peaks and distant valleys, golden light catching on cliff faces as the camera sweeps laterally across the landscape",
+      "negative_prompt_suffix": "static camera, ground level, interior shot, no lateral movement, locked off framing",
+      "recommended_duration": 5.0,
+      "recommended_fps": 24,
+      "motion_intensity": "high"
+    },
+    {
+      "id": "sword_fight_handheld",
+      "category": "dynamic",
+      "name_zh": "剑战手持",
+      "name_en": "Sword Fight Handheld",
+      "prompt_suffix": "intense handheld tracking camera following fast martial arts combat, slight camera shake matching the energy of sword strikes, quick reframing to follow the action, dynamic angles shifting between combatants, kinetic and urgent camera movement",
+      "negative_prompt_suffix": "static camera, tripod locked, smooth glide, slow movement, wide establishing shot, no camera shake",
+      "recommended_duration": 3.0,
+      "recommended_fps": 24,
+      "motion_intensity": "high"
+    },
+    {
+      "id": "chase_sequence",
+      "category": "dynamic",
+      "name_zh": "追逐镜头",
+      "name_en": "Chase Sequence",
+      "prompt_suffix": "fast-moving tracking shot pursuing a figure through the environment, camera racing forward with urgency, obstacles passing on both sides creating depth and speed, motion blur on peripheral elements, continuous forward momentum with slight lateral adjustments",
+      "negative_prompt_suffix": "static camera, stationary framing, slow pace, no forward movement, locked off wide shot",
+      "recommended_duration": 3.0,
+      "recommended_fps": 24,
+      "motion_intensity": "high"
+    },
+    {
+      "id": "whip_pan",
+      "category": "dynamic",
+      "name_zh": "甩镜",
+      "name_en": "Whip Pan",
+      "prompt_suffix": "extremely fast horizontal whip pan transition, camera snapping rapidly from one subject to another with heavy motion blur in the middle of the movement, abrupt and energetic lateral sweep connecting two moments",
+      "negative_prompt_suffix": "slow pan, static camera, smooth gentle movement, no motion blur, locked off shot",
+      "recommended_duration": 2.0,
+      "recommended_fps": 24,
+      "motion_intensity": "high"
+    },
+    {
+      "id": "speed_ramp",
+      "category": "dynamic",
+      "name_zh": "变速推进",
+      "name_en": "Speed Ramp",
+      "prompt_suffix": "camera movement with dramatic speed ramping, starting in slow motion then rapidly accelerating to high speed, time dilation effect transitioning from detailed slow-mo to explosive fast motion, dramatic tempo shift in a single continuous shot",
+      "negative_prompt_suffix": "constant speed, static camera, uniform pacing, no speed variation, locked off shot",
+      "recommended_duration": 4.0,
+      "recommended_fps": 24,
+      "motion_intensity": "high"
+    },
+    {
+      "id": "dramatic_orbit_360",
+      "category": "dramatic",
+      "name_zh": "360环绕",
+      "name_en": "Dramatic 360 Orbit",
+      "prompt_suffix": "camera orbiting smoothly around the subject in a full 360-degree arc, continuous circular dolly movement maintaining constant distance, background rotating behind the subject creating a dramatic revolving perspective, steady and controlled orbital motion",
+      "negative_prompt_suffix": "static camera, no rotation, linear dolly, locked off framing, flat angle",
+      "recommended_duration": 5.0,
+      "recommended_fps": 24,
+      "motion_intensity": "medium"
+    },
+    {
+      "id": "dolly_zoom_vertigo",
+      "category": "dramatic",
+      "name_zh": "眩晕变焦",
+      "name_en": "Dolly Zoom Vertigo",
+      "prompt_suffix": "dolly zoom vertigo effect, camera physically moving backward while simultaneously zooming in on the subject, background warping and stretching unnaturally while the subject remains the same size, creating a disorienting spatial compression, Hitchcock zoom effect",
+      "negative_prompt_suffix": "static camera, normal perspective, no distortion, standard zoom, flat composition",
+      "recommended_duration": 3.0,
+      "recommended_fps": 24,
+      "motion_intensity": "medium"
+    },
+    {
+      "id": "slow_push_in",
+      "category": "dramatic",
+      "name_zh": "缓推",
+      "name_en": "Slow Push In",
+      "prompt_suffix": "very slow and deliberate camera push forward toward the subject, gradually tightening the frame, creeping dolly in building tension and focus, nearly imperceptible continuous forward motion drawing the viewer deeper into the scene",
+      "negative_prompt_suffix": "fast movement, pulling back, static camera, abrupt motion, handheld shake",
+      "recommended_duration": 5.0,
+      "recommended_fps": 24,
+      "motion_intensity": "low"
+    },
+    {
+      "id": "pull_back_reveal",
+      "category": "dramatic",
+      "name_zh": "拉远揭示",
+      "name_en": "Pull Back Reveal",
+      "prompt_suffix": "camera slowly pulling backward to reveal the larger scene around the subject, dolly out widening the frame from a close detail to expose the full environment, gradual unveiling of context and scale, dramatic expansion of visible space",
+      "negative_prompt_suffix": "pushing in, static camera, tight framing throughout, no reveal, zoom in",
+      "recommended_duration": 5.0,
+      "recommended_fps": 24,
+      "motion_intensity": "medium"
+    },
+    {
+      "id": "face_closeup_rack_focus",
+      "category": "intimate",
+      "name_zh": "面部特写变焦",
+      "name_en": "Face Close-Up Rack Focus",
+      "prompt_suffix": "extreme close-up on a face with shallow depth of field, smooth rack focus shifting from the eyes to a background element and back, bokeh background transitioning between sharp and soft, intimate and emotionally revealing camera work with minimal movement",
+      "negative_prompt_suffix": "wide shot, deep focus, fast movement, full body framing, no depth of field change",
+      "recommended_duration": 4.0,
+      "recommended_fps": 24,
+      "motion_intensity": "low"
+    },
+    {
+      "id": "over_shoulder",
+      "category": "intimate",
+      "name_zh": "过肩镜头",
+      "name_en": "Over the Shoulder",
+      "prompt_suffix": "over-the-shoulder shot framed past a foreground figure looking at the subject beyond, shallow depth of field with the shoulder and head softly out of focus in the near foreground, subtle camera breathing movement, conversational and grounded perspective",
+      "negative_prompt_suffix": "frontal shot, no foreground element, wide establishing, aerial view, fast camera movement",
+      "recommended_duration": 4.0,
+      "recommended_fps": 24,
+      "motion_intensity": "low"
+    },
+    {
+      "id": "profile_silhouette",
+      "category": "intimate",
+      "name_zh": "侧影剪影",
+      "name_en": "Profile Silhouette",
+      "prompt_suffix": "side profile shot of the subject rendered as a dramatic silhouette against a bright background, camera holding steady with very subtle lateral drift, strong rim light outlining the figure, contrasty backlit composition with minimal fill",
+      "negative_prompt_suffix": "frontal view, flat lighting, no silhouette, overlit face, fast camera movement",
+      "recommended_duration": 4.0,
+      "recommended_fps": 24,
+      "motion_intensity": "low"
+    },
+    {
+      "id": "wide_establishing",
+      "category": "establishing",
+      "name_zh": "全景建立",
+      "name_en": "Wide Establishing",
+      "prompt_suffix": "ultra-wide establishing shot capturing the full scope of the environment, camera holding mostly steady with a very slow lateral pan, deep focus from foreground to distant background, grand scale composition emphasizing the setting over any single subject",
+      "negative_prompt_suffix": "close-up, tight framing, shallow DOF, fast movement, subject filling frame",
+      "recommended_duration": 5.0,
+      "recommended_fps": 24,
+      "motion_intensity": "low"
+    },
+    {
+      "id": "time_lapse_pan",
+      "category": "establishing",
+      "name_zh": "延时摇镜",
+      "name_en": "Time-Lapse Pan",
+      "prompt_suffix": "time-lapse style shot with accelerated cloud movement and shifting light while the camera executes a slow continuous horizontal pan across the landscape, day transitioning through lighting changes, compressed time with smooth lateral camera sweep",
+      "negative_prompt_suffix": "real-time speed, static camera, no time compression, tight framing, night only",
+      "recommended_duration": 5.0,
+      "recommended_fps": 24,
+      "motion_intensity": "medium"
+    },
+    {
+      "id": "landscape_parallax",
+      "category": "establishing",
+      "name_zh": "风景视差",
+      "name_en": "Landscape Parallax",
+      "prompt_suffix": "lateral tracking shot with strong parallax depth, foreground elements like trees and rocks sliding past quickly while distant mountains and sky move slowly, multi-layered depth creating a three-dimensional sense of space, smooth steady horizontal dolly",
+      "negative_prompt_suffix": "static camera, flat composition, no depth layers, aerial shot, close-up framing",
+      "recommended_duration": 5.0,
+      "recommended_fps": 24,
+      "motion_intensity": "medium"
+    },
+    {
+      "id": "meditation_float_up",
+      "category": "xianxia_specific",
+      "name_zh": "冥想升空",
+      "name_en": "Meditation Float Up",
+      "prompt_suffix": "camera slowly rising as if levitating with the meditating subject, gentle upward float matching the character ascending from the ground, spiritual energy particles drifting downward relative to the rising camera, serene and weightless vertical ascent, world falling away below",
+      "negative_prompt_suffix": "static camera, grounded perspective, fast movement, descending shot, handheld shake",
+      "recommended_duration": 5.0,
+      "recommended_fps": 24,
+      "motion_intensity": "low"
+    },
+    {
+      "id": "qi_gathering_orbit",
+      "category": "xianxia_specific",
+      "name_zh": "聚气环绕",
+      "name_en": "Qi Gathering Orbit",
+      "prompt_suffix": "camera circling slowly around a cultivator gathering spiritual energy, orbital dolly with a gradual spiral tightening inward, luminous qi particles swirling in the same rotational direction as the camera, building intensity as the orbit accelerates slightly, vortex-like camera movement converging on the subject",
+      "negative_prompt_suffix": "static camera, no rotation, linear movement, no energy effects, flat lighting",
+      "recommended_duration": 5.0,
+      "recommended_fps": 24,
+      "motion_intensity": "medium"
+    },
+    {
+      "id": "breakthrough_explosion",
+      "category": "xianxia_specific",
+      "name_zh": "突破爆发",
+      "name_en": "Breakthrough Explosion",
+      "prompt_suffix": "dramatic rapid camera pull-back from a tight close-up as a massive energy explosion erupts outward from the subject, shockwave expanding toward the camera, extreme dolly out matching the blast radius, debris and energy particles flying past the lens, sudden violent expansion of the frame from intimate to epic scale",
+      "negative_prompt_suffix": "static camera, slow movement, pushing in, calm scene, no energy effects, gentle pacing",
+      "recommended_duration": 3.0,
+      "recommended_fps": 24,
+      "motion_intensity": "high"
+    },
+    {
+      "id": "sword_flight_fpv",
+      "category": "xianxia_specific",
+      "name_zh": "御剑飞行第一人称",
+      "name_en": "Sword Flight FPV",
+      "prompt_suffix": "continuous first-person flying shot as if riding on a sword through the sky, camera racing forward above the clouds with wind-swept motion, banking left and right around mountain peaks, dipping below cloud layers and bursting back above, exhilarating high-speed aerial point-of-view with parallax depth",
+      "negative_prompt_suffix": "static camera, ground level, third person view, slow movement, interior shot, locked off framing",
+      "recommended_duration": 5.0,
+      "recommended_fps": 24,
+      "motion_intensity": "high"
+    },
+    {
+      "id": "teleport_flash",
+      "category": "xianxia_specific",
+      "name_zh": "瞬移闪现",
+      "name_en": "Teleport Flash",
+      "prompt_suffix": "rapid camera snap-zoom into a bright flash of light followed by an instant cut to a completely new environment, abrupt spatial discontinuity simulating teleportation, brief white-out or energy burst bridging two locations, disorienting but deliberate jump in camera position",
+      "negative_prompt_suffix": "slow transition, smooth dolly, continuous movement, no flash effect, gradual dissolve",
+      "recommended_duration": 2.0,
+      "recommended_fps": 24,
+      "motion_intensity": "high"
+    },
+    {
+      "id": "dutch_angle_tension",
+      "category": "dramatic",
+      "name_zh": "倾斜紧张",
+      "name_en": "Dutch Angle Tension",
+      "prompt_suffix": "tilted dutch angle shot creating visual unease and tension, camera canted at a diagonal with a slow creeping push forward, off-kilter horizon line amplifying psychological discomfort, slight rotational drift adding to the destabilized feeling",
+      "negative_prompt_suffix": "level horizon, static camera, stable framing, no tilt, calm composition",
+      "recommended_duration": 4.0,
+      "recommended_fps": 24,
+      "motion_intensity": "low"
+    },
+    {
+      "id": "low_angle_power",
+      "category": "dramatic",
+      "name_zh": "仰拍威压",
+      "name_en": "Low Angle Power Shot",
+      "prompt_suffix": "low angle camera looking upward at the subject from below, emphasizing power and dominance, slight upward tilt with a slow push forward, towering figure framed against the sky, heroic and imposing perspective with the subject looming large in the frame",
+      "negative_prompt_suffix": "high angle, looking down, bird's eye view, level angle, diminishing subject",
+      "recommended_duration": 4.0,
+      "recommended_fps": 24,
+      "motion_intensity": "low"
+    },
+    {
+      "id": "falling_descent",
+      "category": "dynamic",
+      "name_zh": "坠落下降",
+      "name_en": "Falling Descent",
+      "prompt_suffix": "camera plunging downward in a rapid free-fall, rushing toward the ground with increasing speed, environment streaking upward past the lens, vertigo-inducing straight-down descent with wind and debris rushing past, terminal velocity camera drop",
+      "negative_prompt_suffix": "static camera, ascending shot, slow movement, horizontal tracking, stable framing",
+      "recommended_duration": 3.0,
+      "recommended_fps": 24,
+      "motion_intensity": "high"
+    },
+    {
+      "id": "formation_array_overhead",
+      "category": "xianxia_specific",
+      "name_zh": "阵法俯瞰",
+      "name_en": "Formation Array Overhead",
+      "prompt_suffix": "top-down overhead shot looking straight down at a glowing magical formation array on the ground, camera slowly rotating clockwise as the formation activates, concentric circles and runes illuminating in sequence below, measured rotational spin matching the ritual energy, geometric patterns expanding outward",
+      "negative_prompt_suffix": "side angle, ground level, no rotation, close-up on face, fast movement, no magical effects",
+      "recommended_duration": 5.0,
+      "recommended_fps": 24,
+      "motion_intensity": "medium"
+    }
+  ]
+}
