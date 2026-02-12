@@ -12,6 +12,7 @@ Modules:
 - video_extend: extend short video clips to longer duration
 - style_harmonize: cross-shot visual consistency
 - lip_sync: multi-backend lip synchronization (MuseTalk, Wav2Lip, SadTalker, Hallo2)
+- phoneme_sync: phoneme-level lip-sync alignment (requires whisper)
 """
 
 from animatediff.postprocess.interpolation import FrameInterpolator
@@ -31,7 +32,13 @@ from animatediff.postprocess.compositor import VideoCompositor
 from animatediff.postprocess.lipsync import LipSyncProcessor, apply_lipsync_to_shots
 from animatediff.postprocess.lip_sync import LipSyncer, FaceDetector
 from animatediff.postprocess.deflicker import VideoDeflicker
-from animatediff.postprocess.beat_sync import BeatAnalyzer, ShotBeatAligner, BeatInfo
+from animatediff.postprocess.beat_sync import (
+    BeatAnalyzer,
+    ShotBeatAligner,
+    BeatInfo,
+    generate_beat_synced_shots,
+    energy_matched_transitions,
+)
 from animatediff.postprocess.mtv_sync import (
     AudioStreamAnalyzer,
     VideoAudioSync,
@@ -41,3 +48,4 @@ from animatediff.postprocess.mtv_sync import (
 )
 from animatediff.postprocess.video_extend import VideoExtender
 from animatediff.postprocess.style_harmonize import StyleHarmonizer, StyleDescriptor
+from animatediff.postprocess.phoneme_sync import PhonemeAligner, PhonemeTimeline, Viseme

@@ -10,3 +10,7 @@ from animatediff.core.distillation import (
 )
 from animatediff.core.reference_parser import Reference, ReferenceSet, ReferenceParser
 from animatediff.core.director import DirectorEngine, ExecutionPlan, ShotPlan, ShotResult
+from animatediff.core.av_sync import AVSyncPipeline, AVSyncStrategy
+from animatediff.core.reward_model import RewardEnsemble, RewardScore
+from animatediff.core.refinement_loop import RefinementLoop, RefinementResult
+from animatediff.core.acceleration import AccelerationManager, AccelerationReport

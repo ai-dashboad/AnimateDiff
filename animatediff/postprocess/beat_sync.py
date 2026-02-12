@@ -747,6 +747,109 @@ class ShotBeatAligner:
 
 
 # ---------------------------------------------------------------------------
+# Generation integration — feed beat-aligned durations into DirectorEngine
+# ---------------------------------------------------------------------------
+
+def generate_beat_synced_shots(
+    storyboard_shots: list[dict],
+    bgm_path: str,
+    mode: str = "snap_to_beat",
+    start_offset: float = 0.0,
+    fps: int = 24,
+) -> list[dict]:
+    """Align storyboard shot durations to BGM beats, ready for generation.
+
+    Combines BeatAnalyzer + ShotBeatAligner into a single convenience
+    function. The returned shots have adjusted duration_seconds and
+    num_frames fields ready for DirectorEngine.execute().
+
+    Args:
+        storyboard_shots: List of shot dicts (must have duration_seconds, fps).
+        bgm_path: Path to the background music file.
+        mode: Alignment mode ("snap_to_beat", "snap_to_downbeat", "energy_match").
+        start_offset: Time offset from BGM start (seconds).
+        fps: Video frame rate.
+
+    Returns:
+        Adjusted shot dicts with beat-aligned timing.
+    """
+    _require_librosa()
+
+    analyzer = BeatAnalyzer(bgm_path)
+    aligner = ShotBeatAligner(analyzer)
+
+    # Ensure all shots have fps
+    for shot in storyboard_shots:
+        shot.setdefault("fps", fps)
+
+    aligned = aligner.align_shots(storyboard_shots, mode=mode, start_offset=start_offset)
+
+    info = analyzer.get_info()
+    logger.info(
+        f"Beat-synced {len(aligned)} shots to {bgm_path} "
+        f"({info.tempo:.1f} BPM, mode={mode})"
+    )
+    return aligned
+
+
+def energy_matched_transitions(
+    bgm_path: str,
+    shot_durations: list[float],
+    fps: int = 24,
+) -> list[dict]:
+    """Suggest transition types and timing based on musical energy.
+
+    High-energy moments get faster transitions (cut, flash_white),
+    low-energy moments get softer transitions (fade, dissolve).
+
+    Args:
+        bgm_path: Path to BGM file.
+        shot_durations: List of shot durations in seconds.
+        fps: Video frame rate.
+
+    Returns:
+        List of transition dicts: {"type": str, "duration_frames": int, "energy": float}
+    """
+    _require_librosa()
+
+    analyzer = BeatAnalyzer(bgm_path)
+    energy = analyzer.get_energy_curve(fps=fps)
+
+    transitions = []
+    cumulative_time = 0.0
+
+    for i, dur in enumerate(shot_durations):
+        # Sample energy at the transition point (end of this shot)
+        frame_idx = int(cumulative_time * fps)
+        frame_idx = min(frame_idx, len(energy) - 1) if energy else 0
+        e = energy[frame_idx] if energy else 0.5
+
+        # Map energy to transition type
+        if e > 0.7:
+            t_type = "cut"           # Hard cut for high energy
+            t_frames = 0
+        elif e > 0.4:
+            t_type = "flash_white"   # Flash for medium-high
+            t_frames = 4
+        elif e > 0.2:
+            t_type = "dissolve"      # Dissolve for medium
+            t_frames = int(fps * 0.5)
+        else:
+            t_type = "fade"          # Fade for low energy
+            t_frames = int(fps * 0.8)
+
+        transitions.append({
+            "type": t_type,
+            "duration_frames": t_frames,
+            "energy": float(e),
+        })
+
+        cumulative_time += dur
+
+    return transitions
+
+
+# ---------------------------------------------------------------------------
 # CLI — quick test / debug entrypoint
 # ---------------------------------------------------------------------------
 
