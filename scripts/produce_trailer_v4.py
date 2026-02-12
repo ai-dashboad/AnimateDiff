@@ -1601,21 +1601,24 @@ def _generate_shots_chained(
             try:
                 if pipeline_vace is None:
                     print("           Loading VACE pipeline for continuation...")
-                    # Free current pipeline first
-                    if current_pipeline is not pipeline_t2v:
+                    # Free ALL existing pipelines to avoid OOM
+                    if current_pipeline is not None:
                         del current_pipeline
+                        current_pipeline = None
                     if pipeline_i2v is not None:
                         del pipeline_i2v
                         pipeline_i2v = None
                     gc.collect()
                     if device == "cuda":
                         torch.cuda.empty_cache()
+                        time.sleep(1)
 
-                    # Load VACE model params
+                    # Load VACE model params — use 14B only if >=48GB VRAM
                     vace_params = storyboard.get("model_params_vace", {})
-                    vace_variant = "1.3B"  # VACE is available in 1.3B and 14B
+                    vace_variant = "1.3B"
                     if device == "cuda":
-                        vace_variant = "14B"
+                        gpu_mem_gb = torch.cuda.get_device_properties(0).total_mem / (1024**3)
+                        vace_variant = "14B" if gpu_mem_gb >= 48 else "1.3B"
 
                     pipeline_vace = VACEBackendClass.load(
                         model_variant=vace_variant,
@@ -1656,14 +1659,22 @@ def _generate_shots_chained(
             # Ensure I2V pipeline is loaded
             if pipeline_i2v is None:
                 print("           Loading I2V pipeline...")
-                # Free T2V / VACE
+                # Free ALL existing pipelines to avoid OOM
                 if pipeline_vace is not None:
                     del pipeline_vace
                     pipeline_vace = None
-                del pipeline_t2v
+                # current_pipeline may hold a ref to pipeline_t2v — clear both
+                if current_pipeline is not None:
+                    del current_pipeline
+                    current_pipeline = None
+                try:
+                    del pipeline_t2v
+                except UnboundLocalError:
+                    pass
                 gc.collect()
                 if device == "cuda":
                     torch.cuda.empty_cache()
+                    time.sleep(1)  # give CUDA allocator time to reclaim
 
                 pipeline_i2v = BackendClass.load(
                     model_variant=model_variant,
@@ -1711,16 +1722,20 @@ def _generate_shots_chained(
             # Note: pipeline_t2v may have been freed during I2V/VACE loading.
             # In chained mode this can happen. We need to reload.
             if pipeline_i2v is not None or pipeline_vace is not None:
-                # Need to reload T2V
+                # Free ALL existing pipelines before reloading T2V
                 if pipeline_i2v is not None:
                     del pipeline_i2v
                     pipeline_i2v = None
                 if pipeline_vace is not None:
                     del pipeline_vace
                     pipeline_vace = None
+                if current_pipeline is not None:
+                    del current_pipeline
+                    current_pipeline = None
                 gc.collect()
                 if device == "cuda":
                     torch.cuda.empty_cache()
+                    time.sleep(1)
 
                 print("           Reloading T2V pipeline...")
                 pipeline_t2v_reload = BackendClass.load(
@@ -1735,7 +1750,21 @@ def _generate_shots_chained(
                 )
                 current_pipeline = pipeline_t2v_reload
             else:
-                current_pipeline = pipeline_t2v
+                try:
+                    current_pipeline = pipeline_t2v
+                except UnboundLocalError:
+                    # pipeline_t2v was freed earlier — reload
+                    print("           Reloading T2V pipeline...")
+                    current_pipeline = BackendClass.load(
+                        model_variant=model_variant,
+                        mode="t2v",
+                        torch_dtype=torch_dtype,
+                        device=device,
+                        quantization=quantization_override,
+                        offload_strategy=offload,
+                        enable_vae_slicing=True,
+                        enable_vae_tiling=True,
+                    )
 
             gen_kwargs = dict(
                 prompt=prompt,
