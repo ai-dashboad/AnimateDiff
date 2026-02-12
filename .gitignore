@@ -20,6 +20,7 @@ scripts/*
 !scripts/story.py
 !scripts/produce_trailer_v2.py
 !scripts/produce_trailer_v3.py
+!scripts/produce_trailer_v4.py
 !scripts/__init__.py
 
 *.ipynb

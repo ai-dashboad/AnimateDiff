@@ -40,6 +40,10 @@
     "cross_shot_harmonize": true
   },
 
+  "acceleration_preset": "balanced",
+  "quality_threshold": 0.65,
+  "identity_enforcement": "reference",
+
   "postprocess": {
     "upscale": {"model": "animevideov3", "scale": 2},
     "interpolation": {"multiplier": 2, "backend": "auto"},
