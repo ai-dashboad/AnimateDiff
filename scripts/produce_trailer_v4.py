@@ -264,6 +264,7 @@ def _get_shot_chaining_config(storyboard: dict) -> dict:
         "enabled": cfg.get("enabled", False),
         "method": cfg.get("method", "last_frame_i2v"),
         "overlap_frames": cfg.get("overlap_frames", 4),
+        "max_chain_length": cfg.get("max_chain_length", 3),
     }
 
 
@@ -1385,15 +1386,28 @@ def _generate_shots_chained(
     pipeline_vace = None
 
     prev_shot_path = None  # Path to the previously generated shot (for chaining)
+    chain_counter = 0  # How many consecutive shots have been chained
+    max_chain_length = chaining_cfg.get("max_chain_length", 3)
 
     for i, shot in gen_shots:
         shot_path = SHOTS_DIR / f"shot_{i:04d}.mp4"
         mode = shot.get("mode", "t2v")
         should_chain = shot.get("chain_from_previous", False) and prev_shot_path is not None
 
+        # Break chain if we've exceeded max_chain_length to prevent I2V drift
+        if should_chain and chain_counter >= max_chain_length:
+            logger.info(f"    Chain limit reached ({chain_counter}/{max_chain_length}), resetting to standalone T2V")
+            should_chain = False
+            chain_counter = 0
+
         if shot_path.exists():
             print(f"  Shot {i:2d}: [cached] {shot_path}")
             prev_shot_path = str(shot_path)
+            # Track chain length for cached shots too
+            if shot.get("chain_from_previous", False) and chain_counter < max_chain_length:
+                chain_counter += 1
+            else:
+                chain_counter = 0
             continue
 
         num_frames = shot.get("num_frames", 0)
@@ -1410,7 +1424,7 @@ def _generate_shots_chained(
         scene = shot.get("scene", "")
         print(f"  Shot {i:2d}: {mode} — {scene} ({num_frames}f)", end="")
         if should_chain:
-            print(" [chained]", end="")
+            print(f" [chained {chain_counter+1}/{max_chain_length}]", end="")
         if camera_preset:
             print(f" [cam:{camera_preset}]", end="")
         print()
@@ -1828,6 +1842,11 @@ def _generate_shots_chained(
                 logger.debug(f"           Post-gen analysis failed: {e}")
 
         prev_shot_path = str(shot_path)
+        # Track chain length
+        if should_chain:
+            chain_counter += 1
+        else:
+            chain_counter = 0
 
     # Cleanup all pipelines
     for p in [pipeline_i2v, pipeline_vace]:

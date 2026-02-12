@@ -31,7 +31,8 @@
   "shot_chaining": {
     "enabled": true,
     "method": "last_frame_i2v",
-    "overlap_frames": 4
+    "overlap_frames": 4,
+    "max_chain_length": 3
   },
   "deflicker": {
     "enabled": true,

@@ -475,8 +475,10 @@ class VideoDeflicker:
             flow_perm = flow_norm.permute(0, 2, 3, 1)
             sample_grid = grid + flow_perm
 
+            # MPS doesn't support "border" padding — fall back to "zeros"
+            pad_mode = "zeros" if img.device.type == "mps" else "border"
             return F.grid_sample(
-                img, sample_grid, mode="bilinear", padding_mode="border",
+                img, sample_grid, mode="bilinear", padding_mode=pad_mode,
                 align_corners=True,
             )
 

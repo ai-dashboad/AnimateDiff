@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 class FrameInterpolator:
     """Frame interpolation using RIFE or fallback blending."""
 
-    def __init__(self, backend: Literal["auto", "rife", "ncnn", "blend"] = "auto", device: str = "cpu"):
+    def __init__(self, backend: Literal["auto", "rife", "ncnn", "minterpolate", "blend"] = "auto", device: str = "cpu"):
         self.device = device
         self.backend = self._resolve_backend(backend)
         self._model = None
@@ -30,11 +30,18 @@ class FrameInterpolator:
         if backend != "auto":
             return backend
 
-        # Try PyTorch RIFE first
+        # Try PyTorch RIFE — need torch + model code + pretrained weights
         try:
             import torch
-            # Check if practical-rife model files exist or torch is available
-            return "rife"
+            import importlib
+            # Only use rife backend if actual weight files exist
+            for model_dir in ["train_log", "rife_model", "models/rife"]:
+                try:
+                    spec = importlib.util.find_spec(f"{model_dir}.RIFE_HDv3")
+                    if spec:
+                        return "rife"
+                except (ImportError, ModuleNotFoundError, ValueError):
+                    continue
         except ImportError:
             pass
 
@@ -43,6 +50,17 @@ class FrameInterpolator:
             import rife_ncnn_vulkan_python
             return "ncnn"
         except ImportError:
+            pass
+
+        # Try ffmpeg minterpolate (motion-compensated, decent quality)
+        try:
+            import subprocess
+            r = subprocess.run(
+                ["ffmpeg", "-filters"], capture_output=True, text=True, timeout=5,
+            )
+            if "minterpolate" in r.stdout:
+                return "minterpolate"
+        except (FileNotFoundError, subprocess.TimeoutExpired):
             pass
 
         logger.info("No RIFE backend available, using simple frame blending")
@@ -75,6 +93,8 @@ class FrameInterpolator:
             return self._interpolate_rife(frames, multiplier, scale)
         elif self.backend == "ncnn":
             return self._interpolate_ncnn(frames, multiplier)
+        elif self.backend == "minterpolate":
+            return self._interpolate_minterpolate(frames, multiplier)
         else:
             return self._interpolate_blend(frames, multiplier)
 
@@ -106,15 +126,23 @@ class FrameInterpolator:
         return result
 
     def _load_rife_model(self):
-        """Load RIFE model. Tries multiple locations."""
+        """Load RIFE model. Tries pip package then local directories."""
         import torch
 
-        # Try importing from practical-rife
+        # Try the xhluca/rife pip package first
         try:
-            import sys
-            import importlib
+            from rife.RIFE_HDv2 import Model as RifeModel
+            model = RifeModel()
+            model.eval()
+            model.device()
+            logger.info("Loaded RIFE HDv2 from pip package (no pretrained weights — inference only)")
+            return model
+        except Exception as e:
+            logger.debug(f"rife pip package load failed: {e}")
 
-            # Look for common RIFE model locations
+        # Try loading from local model directories with weights
+        try:
+            import importlib
             for model_dir in ["train_log", "rife_model", "models/rife"]:
                 try:
                     spec = importlib.util.find_spec(f"{model_dir}.RIFE_HDv3")
@@ -132,8 +160,16 @@ class FrameInterpolator:
         except Exception as e:
             logger.warning(f"Could not load RIFE PyTorch model: {e}")
 
-        # Fallback: use a simple optical flow interpolation
-        logger.warning("RIFE model not found, falling back to blend mode")
+        # Fallback to minterpolate if available, then blend
+        logger.warning("RIFE model not found, falling back to minterpolate/blend")
+        try:
+            import subprocess
+            r = subprocess.run(["ffmpeg", "-filters"], capture_output=True, text=True, timeout=5)
+            if "minterpolate" in r.stdout:
+                self.backend = "minterpolate"
+                return None
+        except Exception:
+            pass
         self.backend = "blend"
         return None
 
@@ -160,6 +196,65 @@ class FrameInterpolator:
         except Exception as e:
             logger.warning(f"NCNN interpolation failed: {e}, falling back to blend")
             return self._interpolate_blend(frames, multiplier)
+
+    def _interpolate_minterpolate(self, frames: List[Image.Image], multiplier: int) -> List[Image.Image]:
+        """Interpolate using ffmpeg minterpolate filter (motion-compensated)."""
+        import subprocess
+        import tempfile
+        import os
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            input_dir = os.path.join(tmpdir, "input")
+            output_file = os.path.join(tmpdir, "output.mp4")
+            output_dir = os.path.join(tmpdir, "output")
+            os.makedirs(input_dir)
+            os.makedirs(output_dir)
+
+            # Write input frames as PNGs
+            for i, frame in enumerate(frames):
+                frame.save(os.path.join(input_dir, f"{i:06d}.png"))
+
+            input_fps = 24  # assume 24fps input
+            output_fps = input_fps * multiplier
+
+            # Run ffmpeg minterpolate
+            cmd = [
+                "ffmpeg", "-y", "-framerate", str(input_fps),
+                "-i", os.path.join(input_dir, "%06d.png"),
+                "-vf", f"minterpolate=fps={output_fps}:mi_mode=mci:mc_mode=aobmc:me_mode=bidir:vsbmc=1",
+                "-pix_fmt", "rgb24", output_file,
+            ]
+            try:
+                subprocess.run(cmd, capture_output=True, timeout=300, check=True)
+            except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
+                logger.warning(f"minterpolate failed: {e}, falling back to blend")
+                return self._interpolate_blend(frames, multiplier)
+
+            # Extract frames back from video
+            cmd2 = [
+                "ffmpeg", "-y", "-i", output_file,
+                "-pix_fmt", "rgb24",
+                os.path.join(output_dir, "%06d.png"),
+            ]
+            try:
+                subprocess.run(cmd2, capture_output=True, timeout=120, check=True)
+            except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
+                logger.warning(f"Frame extraction failed: {e}, falling back to blend")
+                return self._interpolate_blend(frames, multiplier)
+
+            # Read output frames
+            result = []
+            png_files = sorted(f for f in os.listdir(output_dir) if f.endswith(".png"))
+            for png_file in png_files:
+                img = Image.open(os.path.join(output_dir, png_file)).convert("RGB")
+                result.append(img)
+
+            if not result:
+                logger.warning("minterpolate produced no frames, falling back to blend")
+                return self._interpolate_blend(frames, multiplier)
+
+            logger.info(f"minterpolate: {len(frames)} -> {len(result)} frames")
+            return result
 
     def _interpolate_blend(self, frames: List[Image.Image], multiplier: int) -> List[Image.Image]:
         """Simple alpha blending interpolation (fallback)."""
