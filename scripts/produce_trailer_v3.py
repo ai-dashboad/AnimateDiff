@@ -58,8 +58,8 @@ FINAL_DIR = OUTPUT_DIR / "final"
 TRANSITION_PAD = 0.3  # seconds of padding after narration
 
 # BGM (Creative Commons)
-BGM_URL = "https://peritune.com/wp-content/uploads/2024/03/PeriTune-Wuxia3.mp3"
-BGM_FILENAME = "PeriTune-Wuxia3.mp3"
+BGM_URL = "https://peritune.com/music/PerituneMaterial_Wuxia3.mp3"
+BGM_FILENAME = "PerituneMaterial_Wuxia3.mp3"
 
 
 def _load_storyboard() -> dict:
@@ -285,7 +285,7 @@ def phase1_generate_narration():
 
     generated = []
     for i, shot in enumerate(shots):
-        narration = shot.get("narration", "")
+        narration = shot.get("narration") or ""
         voice_id = shot.get("voice_id", "narrator")
 
         if not narration.strip():
@@ -362,7 +362,7 @@ def phase1_compute_durations():
 
     for i, shot in enumerate(shots):
         wav_path = NARRATION_DIR / f"narration_{i:04d}.wav"
-        narration = shot.get("narration", "")
+        narration = shot.get("narration") or ""
         mode = shot.get("mode", "t2v")
 
         if narration.strip() and wav_path.exists():
@@ -458,17 +458,18 @@ def phase2_generate_on_gpu():
 
     # Determine model variant and generation params based on device
     if device == "cuda":
-        model_variant = "A14B"
-        gen_width = model_params["width"]
-        gen_height = model_params["height"]
-        gen_fps = model_params["fps"]
+        model_variant = "5B"
+        gen_width = 832
+        gen_height = 480
+        gen_fps = 24
         max_frames = model_params["max_frames"]
-        guidance_scale = model_params["guidance_scale"]
-        guidance_scale_2 = model_params["guidance_scale_2"]
-        num_inference_steps = model_params["num_inference_steps"]
+        guidance_scale = 5.0
+        guidance_scale_2 = None
+        num_inference_steps = 50
         offload = "model_cpu"
-        portrait_width = 1280
-        portrait_height = 720
+        quantization_override = "none"
+        portrait_width = 832
+        portrait_height = 480
     else:
         # MPS fallback to TI2V-5B
         model_variant = "5B"
@@ -479,6 +480,7 @@ def phase2_generate_on_gpu():
         guidance_scale_2 = None  # no dual transformer on 5B
         num_inference_steps = 50
         offload = "none"
+        quantization_override = "none"
         portrait_width = 832
         portrait_height = 480
 
@@ -487,6 +489,14 @@ def phase2_generate_on_gpu():
     print(f"Guidance: scale={guidance_scale}, scale_2={guidance_scale_2}")
     print(f"Steps: {num_inference_steps}")
     print(f"Offload: {offload}")
+
+    # Write actual generation params to computed storyboard so Phase 3 picks up correct fps
+    storyboard["model_params"]["fps"] = gen_fps
+    storyboard["model_params"]["width"] = gen_width
+    storyboard["model_params"]["height"] = gen_height
+    computed_path = OUTPUT_DIR / "storyboard_computed.json"
+    with open(computed_path, "w", encoding="utf-8") as f:
+        json.dump(storyboard, f, indent=2, ensure_ascii=False)
 
     BackendClass = get_backend("wan22")
 
@@ -502,7 +512,7 @@ def phase2_generate_on_gpu():
         mode="t2v",
         torch_dtype=torch_dtype,
         device=device,
-        quantization=rec.quantization,
+        quantization=quantization_override,
         offload_strategy=offload,
         enable_vae_slicing=True,
         enable_vae_tiling=True,
@@ -511,7 +521,19 @@ def phase2_generate_on_gpu():
 
     portrait_results = {}
     for name, info in storyboard.get("characters", {}).items():
+        # Check storyboard image_path first (user-provided reference)
+        storyboard_img = info.get("image_path")
+        if storyboard_img:
+            img_abs = Path(storyboard_img) if Path(storyboard_img).is_absolute() else PROJECT_ROOT / storyboard_img
+            if img_abs.exists():
+                print(f"  {name}: [storyboard ref] {img_abs}")
+                portrait_results[name] = str(img_abs)
+                continue
+
+        # Check cached .png or .jpg
         portrait_path = PORTRAIT_DIR / f"{name}.png"
+        if not portrait_path.exists():
+            portrait_path = PORTRAIT_DIR / f"{name}.jpg"
         if portrait_path.exists():
             print(f"  {name}: [cached] {portrait_path}")
             portrait_results[name] = str(portrait_path)
@@ -621,7 +643,7 @@ def phase2_generate_on_gpu():
             mode="i2v",
             torch_dtype=torch_dtype,
             device=device,
-            quantization=rec.quantization,
+            quantization=quantization_override,
             offload_strategy=offload,
             enable_vae_slicing=True,
             enable_vae_tiling=True,
@@ -886,18 +908,22 @@ def phase3_postprocess():
     print("\n--- Step 3.3: RIFE Frame Interpolation ---")
 
     if rife_mult > 1:
-        from animatediff.postprocess.interpolation import FrameInterpolator
-        interpolator = FrameInterpolator(backend="auto", device=device)
+        try:
+            from animatediff.postprocess.interpolation import FrameInterpolator
+            interpolator = FrameInterpolator(backend="auto", device=device)
 
-        for i, frames in enumerate(shot_frame_lists):
-            if rife_mult > 1 and len(frames) > 1:
-                original_count = len(frames)
-                # Expected output: (N-1) * mult + 1 frames
-                expected_count = (original_count - 1) * rife_mult + 1
-                print(f"  Shot {i:2d}: RIFE {rife_mult}x interpolation ({original_count} -> ~{expected_count} frames)")
-                frames = interpolator.interpolate(frames, multiplier=rife_mult)
-                shot_frame_lists[i] = frames
-                print(f"           -> {len(frames)} frames")
+            for i, frames in enumerate(shot_frame_lists):
+                if rife_mult > 1 and len(frames) > 1:
+                    original_count = len(frames)
+                    expected_count = (original_count - 1) * rife_mult + 1
+                    print(f"  Shot {i:2d}: RIFE {rife_mult}x interpolation ({original_count} -> ~{expected_count} frames)")
+                    frames = interpolator.interpolate(frames, multiplier=rife_mult)
+                    shot_frame_lists[i] = frames
+                    print(f"           -> {len(frames)} frames")
+        except Exception as e:
+            print(f"  RIFE interpolation failed: {e}")
+            print(f"  Skipping interpolation, using native {native_fps}fps")
+            output_fps = native_fps
     else:
         print("  RIFE disabled (multiplier=1), skipping interpolation.")
 
@@ -924,10 +950,10 @@ def phase3_postprocess():
     # --- Step 3.5: Create Title Card + End Card ---
     print("\n--- Step 3.5: Title & End Cards ---")
 
-    # Determine target resolution from upscaled shots
+    # Determine target resolution from upscaled video shots (skip cards)
     target_size = None
-    for frames in shot_frame_lists:
-        if frames:
+    for idx, frames in enumerate(shot_frame_lists):
+        if frames and shot_modes[idx] not in ("title_card", "end_card"):
             target_size = frames[0].size
             break
     if target_size is None:
@@ -936,6 +962,14 @@ def phase3_postprocess():
         target_size = (mp["width"] * 2, mp["height"] * 2)
 
     print(f"  Target size: {target_size}")
+
+    # Resize card frames in shot_frame_lists to match target_size
+    if target_size:
+        for idx, frames in enumerate(shot_frame_lists):
+            if frames and shot_modes[idx] in ("title_card", "end_card"):
+                if frames[0].size != target_size:
+                    shot_frame_lists[idx] = [f.resize(target_size, Image.LANCZOS) for f in frames]
+                    print(f"  Shot {idx:2d}: Resized card {frames[0].size} -> {target_size}")
 
     title_frames = _create_title_card(
         storyboard.get("title", "凡人修仙传"),

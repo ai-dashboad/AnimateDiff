@@ -1,23 +1,54 @@
 {
-  "title": "凡人修仙传 · 炼气篇 — 预告片 V3",
-  "version": "3.0",
-  "model": "wan22_a14b",
+  "title": "凡人修仙传 · 炼气篇 — 预告片 V4",
+  "version": "4.0",
+
+  "model": "wan22_ti2v_5b",
+  "model_fallback": "wan22_a14b",
   "model_params": {
-    "width": 1280,
-    "height": 720,
-    "fps": 16,
+    "width": 832,
+    "height": 480,
+    "fps": 24,
     "max_frames": 81,
-    "guidance_scale": 4.0,
-    "guidance_scale_2": 3.0,
-    "num_inference_steps": 40
+    "guidance_scale": 5.0,
+    "num_inference_steps": 50
   },
+  "model_params_vace": {
+    "width": 832,
+    "height": 480,
+    "fps": 24,
+    "max_frames": 81,
+    "guidance_scale": 5.0,
+    "guidance_scale_2": 3.0,
+    "num_inference_steps": 50,
+    "note": "VACE variant for inpainting/outpainting shots; falls back to standard TI2V on MPS"
+  },
+
+  "beat_sync": {
+    "enabled": true,
+    "mode": "snap_to_beat",
+    "bgm_path": "output/fanren-trailer-v4/PerituneMaterial_Wuxia3.mp3"
+  },
+  "shot_chaining": {
+    "enabled": true,
+    "method": "last_frame_i2v",
+    "overlap_frames": 4
+  },
+  "deflicker": {
+    "enabled": true,
+    "backend": "auto",
+    "strength": 0.6,
+    "cross_shot_harmonize": true
+  },
+
   "postprocess": {
     "upscale": {"model": "animevideov3", "scale": 2},
     "interpolation": {"multiplier": 2, "backend": "auto"},
     "color_lut": "xianxia_blue_gold"
   },
+
   "style": "cinematic xianxia, film grain, anamorphic lens, volumetric lighting, atmospheric haze, high detail, masterpiece quality",
   "negative_prompt": "blurry, low quality, distorted, deformed, ugly, watermark, static camera, talking head, selfie, modern clothing",
+
   "voice_profiles": {
     "narrator": {
       "description": "Male narrator, deep authoritative voice, Chinese audiobook style",
@@ -35,47 +66,63 @@
       "ref_text": null
     }
   },
+
   "characters": {
     "韩立_early": {
       "description": "young thin boy age 14, simple brown cloth, messy black hair, poor but determined dark eyes, thin face",
-      "image_path": "output/fanren-trailer-v3/portraits/韩立_early.jpg",
+      "image_path": "output/fanren-trailer-v4/portraits/韩立_early.jpg",
       "portrait_prompt": "cinematic medium shot of a young thin Chinese boy age 14, wearing simple ragged brown cloth, messy black hair, poor but determined dark eyes, thin face, standing in a mountain village, golden hour lighting, shallow depth of field, film grain, xianxia anime style, high detail, landscape 16:9 composition",
       "lora_path": null,
       "lora_scale": 1.0
     },
     "韩立_late": {
       "description": "young male cultivator age 16, grey disciple robes, hair tied in topknot, determined gaze, faint golden aura",
-      "image_path": "output/fanren-trailer-v3/portraits/韩立_late.jpg",
+      "image_path": "output/fanren-trailer-v4/portraits/韩立_late.jpg",
       "portrait_prompt": "cinematic medium shot of a young Chinese male cultivator age 16, grey disciple robes with dark trim, hair tied in topknot, determined gaze, faint golden spiritual aura, mountain backdrop, volumetric fog, rim lighting, xianxia anime style, high detail, landscape 16:9 composition",
+      "lora_path": null,
+      "lora_scale": 1.0
+    },
+    "韩立_breakthrough": {
+      "description": "young male cultivator age 16, torn grey robes revealing golden light beneath, hair unbound flowing upward with energy, golden eyes glowing, spiritual pressure waves, intense expression",
+      "image_path": "output/fanren-trailer-v4/portraits/韩立_breakthrough.jpg",
+      "portrait_prompt": "cinematic medium shot of a young Chinese male cultivator age 16, torn grey robes with golden energy leaking through cracks, hair unbound flowing upward from spiritual pressure, eyes glowing faint gold, expression of extreme concentration and power, swirling energy particles, dark background with golden rim light, xianxia anime style, high detail, landscape 16:9 composition",
       "lora_path": null,
       "lora_scale": 1.0
     },
     "墨大夫": {
       "description": "sinister old man with long white beard, dark green robes, sharp cunning eyes, hunched posture, alchemist",
-      "image_path": "output/fanren-trailer-v3/portraits/墨大夫.jpg",
+      "image_path": "output/fanren-trailer-v4/portraits/墨大夫.jpg",
       "portrait_prompt": "cinematic medium shot of a sinister old Chinese man alchemist, long white beard, dark green robes, sharp cunning eyes, hunched posture, dim candlelit alchemy room background, chiaroscuro lighting, xianxia anime style, high detail, landscape 16:9 composition",
       "lora_path": null,
       "lora_scale": 1.0
     },
     "厉飞雨": {
       "description": "handsome young man in dark black robes, black hair with crown topknot, strong masculine face, thick eyebrows, loyal friend",
-      "image_path": "output/fanren-trailer-v3/portraits/厉飞雨.jpg",
+      "image_path": "output/fanren-trailer-v4/portraits/厉飞雨.jpg",
       "portrait_prompt": "cinematic medium shot of a handsome young Chinese man in grey disciple robes, short black hair, warm friendly smile, sword strapped to back, cherry blossom trees background, soft morning light, xianxia anime style, high detail, landscape 16:9 composition",
       "lora_path": null,
       "lora_scale": 1.0
     }
   },
+
   "shots": [
     {
       "shot_id": 0,
       "mode": "title_card",
-      "prompt": null,
+      "prompt": "",
       "duration_seconds": 3,
       "num_frames": 0,
       "camera": null,
+      "camera_preset": null,
+      "camera_override": null,
+      "motion_intensity": "none",
+      "chain_from_previous": false,
       "emotion": "epic",
       "scene": "片头",
-      "transition": "fade",
+      "transition": {
+        "type": "fade",
+        "duration": 1.0
+      },
       "narration": null,
       "lip_sync": false,
       "voice_id": null
@@ -87,9 +134,16 @@
       "duration_seconds": 0,
       "num_frames": 0,
       "camera": "crane up",
+      "camera_preset": "crane_rise_epic",
+      "camera_override": null,
+      "motion_intensity": "medium",
+      "chain_from_previous": false,
       "emotion": "epic",
       "scene": "仙山云海日出 — 修仙世界",
-      "transition": "dissolve",
+      "transition": {
+        "type": "dissolve",
+        "duration": 0.8
+      },
       "narration": "在这片被灵气笼罩的天地之间，凡人与仙人共存。而大多数人，终其一生，都无法踏入修仙之门。",
       "lip_sync": false,
       "voice_id": "narrator"
@@ -101,10 +155,17 @@
       "duration_seconds": 0,
       "num_frames": 0,
       "camera": "slow dolly in",
+      "camera_preset": "dolly_in_intimate",
+      "camera_override": null,
+      "motion_intensity": "low",
+      "chain_from_previous": true,
       "characters": ["韩立_early"],
       "emotion": "melancholy",
       "scene": "韩立初登场 — 贫寒少年",
-      "transition": "cut",
+      "transition": {
+        "type": "cut",
+        "duration": 0
+      },
       "narration": "他叫韩立，一个出身贫寒的山村少年。为了改变家人的命运，他踏上了一条未知的路。",
       "lip_sync": false,
       "voice_id": "narrator"
@@ -116,9 +177,16 @@
       "duration_seconds": 0,
       "num_frames": 0,
       "camera": "tilt up",
+      "camera_preset": "tilt_up_reveal",
+      "camera_override": null,
+      "motion_intensity": "medium",
+      "chain_from_previous": true,
       "emotion": "epic",
       "scene": "七玄门山门 — 韩立拜入宗门",
-      "transition": "cut",
+      "transition": {
+        "type": "cut",
+        "duration": 0
+      },
       "narration": "七玄门，修仙界的末流宗门。在这里，资质决定一切。而韩立，是最没有资质的那一个。",
       "lip_sync": false,
       "voice_id": "narrator"
@@ -130,10 +198,17 @@
       "duration_seconds": 0,
       "num_frames": 0,
       "camera": "slow zoom in",
+      "camera_preset": "zoom_in_dramatic",
+      "camera_override": null,
+      "motion_intensity": "low",
+      "chain_from_previous": true,
       "characters": ["墨大夫"],
       "emotion": "mysterious",
       "scene": "墨大夫 — 初见韩立的阴险评价",
-      "transition": "cut",
+      "transition": {
+        "type": "cut",
+        "duration": 0
+      },
       "narration": "这孩子……资质虽然平庸，但这份韧性……或许正合老夫所用。",
       "lip_sync": true,
       "voice_id": "moDoctor"
@@ -145,9 +220,16 @@
       "duration_seconds": 0,
       "num_frames": 0,
       "camera": "static with subtle breathing motion",
+      "camera_preset": "static_breathe",
+      "camera_override": null,
+      "motion_intensity": "low",
+      "chain_from_previous": true,
       "emotion": "determined",
       "scene": "洞府苦修 — 炼气入门的痛苦",
-      "transition": "dissolve",
+      "transition": {
+        "type": "dissolve",
+        "duration": 0.5
+      },
       "narration": "别人三天能学会的口诀，他要练上一个月。别人不屑的基础功法，他日夜苦修。",
       "lip_sync": false,
       "voice_id": "narrator"
@@ -159,9 +241,16 @@
       "duration_seconds": 0,
       "num_frames": 0,
       "camera": "dynamic tracking",
+      "camera_preset": "tracking_action",
+      "camera_override": null,
+      "motion_intensity": "high",
+      "chain_from_previous": true,
       "emotion": "happy",
       "scene": "与厉飞雨切磋 — 唯一的友情",
-      "transition": "cut",
+      "transition": {
+        "type": "cut",
+        "duration": 0
+      },
       "narration": "在七玄门的日子里，只有一个人把他当作朋友——厉飞雨。",
       "lip_sync": false,
       "voice_id": "narrator"
@@ -173,9 +262,16 @@
       "duration_seconds": 0,
       "num_frames": 0,
       "camera": "dolly forward",
+      "camera_preset": "dolly_forward_discover",
+      "camera_override": null,
+      "motion_intensity": "medium",
+      "chain_from_previous": true,
       "emotion": "mysterious",
       "scene": "发现长春功秘籍 — 命运的转折",
-      "transition": "dissolve",
+      "transition": {
+        "type": "dissolve",
+        "duration": 0.5
+      },
       "narration": "直到有一天，他发现了一卷被遗忘的古老秘籍——长春功。没有人知道，这就是他命运的转折点。",
       "lip_sync": false,
       "voice_id": "narrator"
@@ -187,9 +283,16 @@
       "duration_seconds": 0,
       "num_frames": 0,
       "camera": "zoom out reveal",
+      "camera_preset": "zoom_out_reveal",
+      "camera_override": null,
+      "motion_intensity": "high",
+      "chain_from_previous": true,
       "emotion": "fearful",
       "scene": "墨大夫的背叛 — 夺舍之战",
-      "transition": "flash_white",
+      "transition": {
+        "type": "flash_white",
+        "duration": 0.3
+      },
       "narration": "但修仙路上，最大的敌人往往不是妖兽，而是身边的人。",
       "lip_sync": false,
       "voice_id": "narrator"
@@ -201,10 +304,17 @@
       "duration_seconds": 0,
       "num_frames": 0,
       "camera": "extreme close-up zoom in",
+      "camera_preset": "zoom_in_extreme_closeup",
+      "camera_override": null,
+      "motion_intensity": "medium",
+      "chain_from_previous": true,
       "characters": ["韩立_late"],
       "emotion": "determined",
       "scene": "觉醒 — 绝境中爆发",
-      "transition": "cut",
+      "transition": {
+        "type": "cut",
+        "duration": 0
+      },
       "narration": "在绝境之中，他第一次触碰到了……真正的力量。",
       "lip_sync": false,
       "voice_id": "narrator"
@@ -216,9 +326,16 @@
       "duration_seconds": 0,
       "num_frames": 0,
       "camera": "dynamic",
+      "camera_preset": "dynamic_action_burst",
+      "camera_override": null,
+      "motion_intensity": "high",
+      "chain_from_previous": true,
       "emotion": "epic",
       "scene": "反杀墨大夫 — 金光破暗",
-      "transition": "fade",
+      "transition": {
+        "type": "fade",
+        "duration": 0.5
+      },
       "narration": "金光破碎黑暗。这一刻，他不再是那个任人摆布的凡人。",
       "lip_sync": false,
       "voice_id": "narrator"
@@ -230,52 +347,147 @@
       "duration_seconds": 0,
       "num_frames": 0,
       "camera": "slow pan left",
+      "camera_preset": "pan_left_contemplative",
+      "camera_override": null,
+      "motion_intensity": "low",
+      "chain_from_previous": true,
       "characters": ["韩立_late"],
       "emotion": "determined",
       "scene": "踏上修仙路 — 韩立的决心",
-      "transition": "dissolve",
+      "transition": {
+        "type": "dissolve",
+        "duration": 0.8
+      },
       "narration": "从今往后，我的路……由我自己来走。",
       "lip_sync": true,
       "voice_id": "hanLi"
     },
+
     {
       "shot_id": 12,
       "mode": "t2v",
-      "prompt": "dynamic montage sequence, a gleaming flying sword cutting through clouds leaving a trail of blue light, then a glowing green pill floating above an alchemy furnace with swirling flames, then a talisman exploding with golden lightning, rapid succession of xianxia magical elements, vibrant colors, high energy, each element filling the frame",
+      "prompt": "breathtaking aerial tracking shot, a young cultivator in flowing white robes standing on a gleaming silver flying sword, soaring through towering cloud pillars above a sea of clouds, sunlight filtering through gaps in the clouds creating god rays, robes and hair streaming behind him in the wind, camera following from slightly below and behind, vast floating mountain islands visible in the distance through cloud gaps, golden hour warm light, anamorphic lens with subtle flare, extreme sense of speed and freedom",
       "duration_seconds": 0,
       "num_frames": 0,
-      "camera": "rapid cuts",
+      "camera": "aerial tracking behind",
+      "camera_preset": "fly_through_clouds",
+      "camera_override": null,
+      "motion_intensity": "high",
+      "chain_from_previous": true,
       "emotion": "epic",
-      "scene": "修仙世界一瞥 — 飞剑丹药符箓",
-      "transition": "cut",
-      "narration": "飞剑、丹药、符箓、法宝……修仙的世界，比他想象的更加广阔，也更加危险。",
+      "scene": "御空飞行 — 驾剑穿云",
+      "transition": {
+        "type": "dissolve",
+        "duration": 0.5
+      },
+      "narration": "当你凌驾于云海之上，俯瞰苍生万物……你才会明白，修仙之路，没有尽头。",
       "lip_sync": false,
       "voice_id": "narrator"
     },
     {
       "shot_id": 13,
-      "mode": "t2v",
-      "prompt": "breathtaking wide shot, camera orbiting around a young cultivator in flowing white robes standing atop a flying sword soaring above the clouds at golden hour sunrise, robes and hair streaming in the wind, vast world of floating mountains and waterfalls visible below, golden sunlight catching on his figure, epic scale, anamorphic lens, xianxia fantasy",
+      "mode": "i2v",
+      "prompt": "dramatic low-angle shot looking up, a young cultivator in torn grey robes sitting cross-legged on a stone platform inside a spiritual formation, entire body surrounded by violent swirling golden energy vortex, hair standing fully upright from spiritual pressure, cracks of golden light spreading across the stone floor beneath him, his face contorted in concentration, ancient rune circles spinning around him at different speeds, the air itself distorting from the energy density, pillars of golden light shooting upward from the formation breaking through the cave ceiling into the sky above, rocks and debris levitating around the figure, the moment of breakthrough from one cultivation realm to the next",
       "duration_seconds": 0,
       "num_frames": 0,
-      "camera": "orbit crane",
+      "camera": "low angle push in",
+      "camera_preset": "low_angle_power_surge",
+      "camera_override": null,
+      "motion_intensity": "high",
+      "chain_from_previous": true,
+      "characters": ["韩立_breakthrough"],
       "emotion": "epic",
-      "scene": "御剑飞行 — 凡人亦可修仙",
-      "transition": "fade",
-      "narration": "凡人修仙传——哪怕是最平凡的人，也可以走出一条通天之路。",
+      "scene": "突破爆发 — 炼气化神",
+      "transition": {
+        "type": "flash_white",
+        "duration": 0.3
+      },
+      "narration": "灵力暴涨，天地共鸣。炼气九层大圆满——突破！",
       "lip_sync": false,
       "voice_id": "narrator"
     },
     {
       "shot_id": 14,
+      "mode": "i2v",
+      "prompt": "serene intimate shot, a young cultivator floating one foot above a lotus-shaped stone platform inside a tranquil mountain cave, legs crossed in lotus position, eyes closed, palms resting on knees facing upward, thin streams of blue and gold spiritual energy spiraling slowly upward from his palms like incense smoke, gentle bioluminescent moss glowing on cave walls, a small underground waterfall creating soft mist in the background, fireflies of spiritual light drifting lazily through the cave, his robes gently rippling as if underwater despite being in air, expression of absolute inner peace, soft warm lighting from below contrasting with cool cave tones",
+      "duration_seconds": 0,
+      "num_frames": 0,
+      "camera": "slow orbit clockwise",
+      "camera_preset": "orbit_slow_meditative",
+      "camera_override": null,
+      "motion_intensity": "low",
+      "chain_from_previous": true,
+      "characters": ["韩立_late"],
+      "emotion": "serene",
+      "scene": "打坐悬浮 — 灵台清明",
+      "transition": {
+        "type": "dissolve",
+        "duration": 1.0
+      },
+      "narration": "修仙之道，先修其心。唯有灵台清明，方能洞察天地之秘。",
+      "lip_sync": false,
+      "voice_id": "narrator"
+    },
+
+    {
+      "shot_id": 15,
+      "mode": "t2v",
+      "prompt": "dynamic montage sequence, a gleaming flying sword cutting through clouds leaving a trail of blue light, then a glowing green pill floating above an alchemy furnace with swirling flames, then a talisman exploding with golden lightning, rapid succession of xianxia magical elements, vibrant colors, high energy, each element filling the frame",
+      "duration_seconds": 0,
+      "num_frames": 0,
+      "camera": "rapid cuts",
+      "camera_preset": "montage_rapid",
+      "camera_override": null,
+      "motion_intensity": "high",
+      "chain_from_previous": true,
+      "emotion": "epic",
+      "scene": "修仙世界一瞥 — 飞剑丹药符箓",
+      "transition": {
+        "type": "cut",
+        "duration": 0
+      },
+      "narration": "飞剑、丹药、符箓、法宝……修仙的世界，比他想象的更加广阔，也更加危险。",
+      "lip_sync": false,
+      "voice_id": "narrator"
+    },
+    {
+      "shot_id": 16,
+      "mode": "t2v",
+      "prompt": "breathtaking wide shot, camera orbiting around a young cultivator in flowing white robes standing atop a flying sword soaring above the clouds at golden hour sunrise, robes and hair streaming in the wind, vast world of floating mountains and waterfalls visible below, golden sunlight catching on his figure, epic scale, anamorphic lens, xianxia fantasy",
+      "duration_seconds": 0,
+      "num_frames": 0,
+      "camera": "orbit crane",
+      "camera_preset": "orbit_crane_epic",
+      "camera_override": null,
+      "motion_intensity": "medium",
+      "chain_from_previous": true,
+      "emotion": "epic",
+      "scene": "御剑飞行 — 凡人亦可修仙",
+      "transition": {
+        "type": "fade",
+        "duration": 1.0
+      },
+      "narration": "凡人修仙传——哪怕是最平凡的人，也可以走出一条通天之路。",
+      "lip_sync": false,
+      "voice_id": "narrator"
+    },
+    {
+      "shot_id": 17,
       "mode": "end_card",
-      "prompt": null,
+      "prompt": "",
       "duration_seconds": 3,
       "num_frames": 0,
       "camera": null,
+      "camera_preset": null,
+      "camera_override": null,
+      "motion_intensity": "none",
+      "chain_from_previous": false,
       "emotion": "epic",
       "scene": "片尾",
-      "transition": "fade",
+      "transition": {
+        "type": "fade",
+        "duration": 1.5
+      },
       "narration": null,
       "lip_sync": false,
       "voice_id": null
