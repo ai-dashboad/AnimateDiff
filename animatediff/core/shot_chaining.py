@@ -554,6 +554,81 @@ class ShotChainer:
 
 
 # ---------------------------------------------------------------------------
+# Identity-aware chaining
+# ---------------------------------------------------------------------------
+
+def identity_aware_chain(
+    chainer: ShotChainer,
+    shot_data: dict,
+    prev_output_path: str,
+    backend_name: str,
+    identity_keeper: Optional[Any] = None,
+    character_names: Optional[List[str]] = None,
+    prev_frames: Optional[List[Image.Image]] = None,
+    max_retries: int = 2,
+) -> Dict[str, Any]:
+    """Chain shots with identity verification.
+
+    Before generating shot N+1, verifies character identity matches shot N.
+    If mismatch detected, strengthens identity conditioning for the next shot.
+
+    Args:
+        chainer: ShotChainer instance.
+        shot_data: Next shot's storyboard data.
+        prev_output_path: Previous shot's output path.
+        backend_name: Active backend name.
+        identity_keeper: IdentityKeeper instance (optional).
+        character_names: Expected character names in the next shot.
+        prev_frames: Pre-loaded frames from previous shot.
+        max_retries: Max identity enforcement retries.
+
+    Returns:
+        Chaining overrides dict with potential identity conditioning.
+    """
+    # Standard chaining
+    overrides = chainer.chain(
+        shot_data=shot_data,
+        prev_output_path=prev_output_path,
+        prev_frames=prev_frames,
+        backend_name=backend_name,
+    )
+
+    # Identity verification and enforcement
+    if identity_keeper and character_names:
+        try:
+            # Verify identity in previous shot's output
+            if prev_frames is None:
+                prev_frames = chainer._load_frames(prev_output_path)
+
+            if prev_frames:
+                id_scores = identity_keeper.verify_shot_identity(
+                    prev_frames, character_names, sample_count=2,
+                )
+
+                # Check for identity mismatches
+                for name, score in id_scores.items():
+                    if not score.is_match:
+                        logger.warning(
+                            f"Identity mismatch for '{name}' in prev shot: "
+                            f"score={score.overall:.3f}. "
+                            f"Strengthening identity conditioning."
+                        )
+                        # Get the identity and enforce it
+                        identity = identity_keeper.get_identity(name)
+                        if identity:
+                            id_overrides = identity_keeper.enforce_identity(
+                                overrides, identity, method="reference",
+                            )
+                            overrides.update(id_overrides)
+                            overrides["_identity_enforcement"] = True
+
+        except Exception as e:
+            logger.debug(f"Identity-aware chaining check failed: {e}")
+
+    return overrides
+
+
+# ---------------------------------------------------------------------------
 # Factory / convenience
 # ---------------------------------------------------------------------------
 

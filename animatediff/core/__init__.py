@@ -14,3 +14,5 @@ from animatediff.core.av_sync import AVSyncPipeline, AVSyncStrategy
 from animatediff.core.reward_model import RewardEnsemble, RewardScore
 from animatediff.core.refinement_loop import RefinementLoop, RefinementResult
 from animatediff.core.acceleration import AccelerationManager, AccelerationReport
+from animatediff.core.identity_keeper import IdentityKeeper, IdentityEmbedding, IdentityScore
+from animatediff.core.nl_editor import NLVideoEditor, EditInstruction
